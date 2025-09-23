@@ -1,48 +1,46 @@
 import { Schema, model as _model } from "mongoose";
-import { string, email, minLength, maxLength } from "zod";
 
+// Define the Signup Schema
 const SignupSchema = new Schema({
-    name : {
-        type: String,
-        required: true,
-        minLength: 2,
-        maxLength :100
-    },
+  name: {
+    type: String,
+    required: true,
+    minlength: 2,  // Mongoose validation keyword
+    maxlength: 100 // Mongoose validation keyword
+  },
 
-    email : {
-        type: String,
-        required: true,
-        unique: true,
-    },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
 
-    password : {
-        type: String,
-        required: true,
-        minLength: 6,
-        maxLength :20
-    }
+  password: {
+    type: String,
+    required: true,
+    minlength: 6,  // Mongoose validation keyword
+    maxlength: 20  // Mongoose validation keyword
+  }
+});
 
-})
-
-
+// Define the Signin Schema
 const SigninSchema = new Schema({
-    email : {
-        type: String,
-        required: true,
-        unique: true,
-    },
-    password : {
-        type: String,
-        required: true,
-        minLength: 6,
-        maxLength :20
-    }
-})
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  password: {
+    type: String,
+    required: true,
+    minlength: 6,  // Mongoose validation keyword
+    maxlength: 20  // Mongoose validation keyword
+  }
+});
 
-const Signin = _model("User",SignupSchema);
-const Login = _model("Login",SigninSchema);
+// Create models
+const Signin = _model("Signin", SignupSchema);
+const Login = _model("Login", SigninSchema);
 
-model.exports{
-    Signin,
-    Login
-}
+// Export models
+export { Signin, Login };

@@ -53,28 +53,26 @@ const Input = () => {
     e.preventDefault();
     console.log("Form Submitted:", formData);
     console.log("Uploaded Files:", uploadedFiles);
-    // Use a custom modal or message box instead of alert()
-    // For this example, we'll just log to the console
     console.log("Form submitted! Check console for values.");
   };
 
   const MineTypeRadio = ({ label, value, name, checked, onChange }) => (
-    <label className="inline-flex items-center">
+    <label className="inline-flex items-center cursor-pointer">
       <input
         type="radio"
         name={name}
         value={value}
         checked={checked}
         onChange={onChange}
-        className="form-radio h-4 w-4 text-green-600 rounded-full"
+        className="form-radio h-4 w-4 text-orange-500 bg-slate-700 border-slate-600 focus:ring-orange-400"
       />
-      <span className="ml-2 text-gray-200">{label}</span>
+      <span className="ml-2 text-gray-300 hover:text-white transition-colors">{label}</span>
     </label>
   );
 
   const InputField = ({ label, name, type = "text", value, onChange }) => (
     <div>
-      <label className="block text-gray-200 font-medium mb-1">
+      <label className="block text-gray-300 font-medium mb-1">
         {label}
       </label>
       <input
@@ -82,14 +80,18 @@ const Input = () => {
         name={name}
         value={value}
         onChange={onChange}
-        className="w-full p-2 border border-gray-600 bg-transparent text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#56F000] [&::-webkit-calendar-picker-indicator]:invert"
+        className="w-full p-2 border border-slate-600 bg-slate-700/50 text-gray-100 rounded-lg 
+                 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 
+                 hover:border-slate-500 transition-all duration-200
+                 [&::-webkit-calendar-picker-indicator]:invert"
       />
     </div>
   );
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-[#181a29]">
-      <div className="bg-[#2a2d3c] p-8 rounded-2xl shadow-lg w-full max-w-4xl">
+    <div className="h-screen w-screen relative top-[5rem]">
+    <div className="flex justify-center items-center   bg-gradient-to-br from-slate-800 via-slate-900 to-blue-900 p-4">
+      <div className="bg-slate-800/80 backdrop-blur-sm border border-slate-700 p-8 rounded-2xl shadow-2xl w-full max-w-4xl mt-[7rem]">
         <h2 className="text-4xl font-light text-center mb-1 text-white">
           Input Mine Site Data
         </h2>
@@ -97,7 +99,7 @@ const Input = () => {
           Please enter the required information and upload initial site files
         </p>
 
-        <form onSubmit={handleSubmit}>
+        <div onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Left Column */}
             <div className="space-y-6">
@@ -118,7 +120,7 @@ const Input = () => {
                     onChange={handleChange}
                   />
                   <div>
-                    <label className="block text-gray-200 font-medium mb-2">
+                    <label className="block text-gray-300 font-medium mb-2">
                       Mine Type
                     </label>
                     <div className="flex space-x-4">
@@ -208,11 +210,14 @@ const Input = () => {
               </div>
               
               {/* File Uploads Section */}
+              <div className="border-2 w-[56rem] text-orange-500 mt-[5rem] relative left-[-29rem]"></div>
+              <div className="-translate-x-[14rem]">
+                
               <div className="mt-6">
                 <h3 className="text-xl font-medium mb-4 text-white">Initial Data Upload</h3>
-                <div className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center flex flex-col items-center justify-center">
+                <div className="border-2 border-dashed border-slate-600 rounded-lg p-8 text-center flex flex-col items-center justify-center hover:border-orange-400 transition-colors">
                   <svg
-                    className="w-16 h-16 text-gray-400 mb-4"
+                    className="w-16 h-16 text-gray-500 mb-4"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -228,7 +233,7 @@ const Input = () => {
                   <p className="text-gray-400 text-lg">
                     Drag & Drop Files Here
                   </p>
-                  <p className="text-[#56F000] font-medium text-lg">
+                  <p className="text-orange-400 font-medium text-lg">
                     or Click to Upload
                   </p>
                 </div>
@@ -237,7 +242,7 @@ const Input = () => {
               {/* Specific Upload Buttons and File Display */}
               <div className="space-y-4 mt-6">
                 <div>
-                  <label htmlFor="geological-surveys-upload" className="w-full bg-[#56F000] text-[#181a29] font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-[#46c900] transition duration-200 block text-center cursor-pointer">
+                  <label htmlFor="geological-surveys-upload" className="w-full bg-orange-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-orange-600 transition duration-200 block text-center cursor-pointer">
                     Upload Geological Surveys
                   </label>
                   <input
@@ -252,7 +257,7 @@ const Input = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="topography-maps-upload" className="w-full bg-[#FFA500] text-[#181a29] font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-[#d68a00] transition duration-200 block text-center cursor-pointer">
+                  <label htmlFor="topography-maps-upload" className="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition duration-200 block text-center cursor-pointer">
                     Upload Topography Maps
                   </label>
                   <input
@@ -267,7 +272,7 @@ const Input = () => {
                 </div>
 
                 <div>
-                  <label className="block text-gray-200 font-medium mb-1 mt-4">
+                  <label className="block text-gray-300 font-medium mb-1 mt-4">
                     Date of Data Collection
                   </label>
                   <input
@@ -275,18 +280,19 @@ const Input = () => {
                     name="dataCollectionDate"
                     value={formData.dataCollectionDate}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-600 bg-transparent text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#56F000] [&::-webkit-calendar-picker-indicator]:invert"
+                    className="w-full p-2 border border-slate-600 bg-slate-700/50 text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 [&::-webkit-calendar-picker-indicator]:invert"
                   />
                 </div>
 
               </div>
             </div>
-          </div>
+          </div></div>
 
           <div className="flex justify-center mt-8">
             <button
               type="submit"
-              className="bg-[#56F000] text-[#181a29] font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-[#46c900] transition duration-200 flex items-center"
+              onClick={handleSubmit}
+              className="bg-orange-500 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-orange-600 transition duration-200 flex items-center"
             >
               Submit & Analyze Data
               <svg
@@ -308,8 +314,9 @@ const Input = () => {
               </svg>
             </button>
           </div>
-        </form>
+        </div>
       </div>
+    </div>
     </div>
   );
 };

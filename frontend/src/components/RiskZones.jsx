@@ -38,8 +38,8 @@ const RiskZones = () => {
   ];
 
   return (
-    <section className="py-20 bg-gray-900 text-white">
-      <div className="container mx-auto px-4">
+    <section className=" bg-gray-900 text-white">
+      <div className="container mx-auto px-4 mt-[6rem]">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             <span className="bg-gradient-to-r from-orange-300 to-yellow-200 bg-clip-text text-transparent">

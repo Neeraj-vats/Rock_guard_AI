@@ -2,8 +2,8 @@ import React from 'react';
 
 export const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-white mt-12">
-      <div className="max-w-7xl mx-auto px-6 py-8 flex justify-between items-start">
+    <footer id='contacts' className="bg-gray-900 text-white ">
+      <div className="max-w-7xl mx-auto px-6 py-8 flex justify-between items-start mt-12">
         {/* Left Section - Project Info */}
         <div>
           <h1 className="text-2xl font-bold mb-2">RockFall Predictor</h1>

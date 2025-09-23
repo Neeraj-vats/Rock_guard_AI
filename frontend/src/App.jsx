@@ -1,18 +1,25 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import Home  from './pages/Home';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import "./App.css";
+import Home from "./pages/Home";
+import InputPage from "./pages/InputPage"; // ✅ make sure this path is correct
+import Navbar from "./components/Navbar";        // ✅ adjust path if needed
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>   <div className="flex flex-col min-h-screen">
-        <Home />
-    </div>
-    </>
-  )
+    <Router>
+      <div className="flex flex-col min-h-screen">
+        
+        
+
+        {/* Page Routes */}
+        <Navbar className="relative"/>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/analyze" element={<InputPage />} />
+        </Routes>
+      </div>
+    </Router>
+  );
 }
 
-export default App
+export default App;

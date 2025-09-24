@@ -162,7 +162,7 @@ const RiskZones = () => {
   };
 
   return (
-    <section ref={sectionRef} className="py-24 bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white relative overflow-hidden">
+    <section id="risk" ref={sectionRef} className="py-24 bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0">
         {[...Array(15)].map((_, i) => (

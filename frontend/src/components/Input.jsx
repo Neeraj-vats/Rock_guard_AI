@@ -93,7 +93,7 @@ InputField.displayName = 'InputField';const Input = () => {
   }, [formData, uploadedFiles]);
 
   return (
-    <div className="h-screen w-screen relative top-[5rem]">
+    <div className="h-screen w-screen relative top-[4rem]">
       <div className="flex justify-center items-center bg-gradient-to-br from-slate-800 via-slate-900 to-blue-900 p-4">
         <div className="bg-slate-800/80 backdrop-blur-sm border border-slate-700 p-8 rounded-2xl shadow-2xl w-full max-w-4xl mt-[7rem]">
           <h2 className="text-4xl font-light text-center mb-1 text-white">
@@ -109,7 +109,7 @@ InputField.displayName = 'InputField';const Input = () => {
               {/* Left Column */}
               <div className="space-y-6">
                 {/* Site Information */}
-                <div>
+                {/* <div>
                   <h3 className="text-xl font-medium mb-4 text-white">Site Information</h3>
                   <div className="space-y-4">
                     <InputField
@@ -153,7 +153,7 @@ InputField.displayName = 'InputField';const Input = () => {
                       </div>
                     </div>
                   </div>
-                </div>
+                </div> */}
 
                 {/* Geotechnical & Rock Data */}
                 <div>
@@ -176,15 +176,7 @@ InputField.displayName = 'InputField';const Input = () => {
 
               {/* Right Column */}
               <div className="space-y-6">
-                {/* Contact Information */}
-                <div>
-                  <h3 className="text-xl font-medium mb-4 text-white">Contact Information</h3>
-                  <div className="space-y-4">
-                    <InputField label="Your Name" name="name" value={formData.name} onChange={handleChange} />
-                    <InputField label="Work Email" name="workEmail" type="email" value={formData.workEmail} onChange={handleChange} />
-                    <InputField label="Phone Number" name="phoneNumber" type="tel" value={formData.phoneNumber} onChange={handleChange} />
-                  </div>
-                </div>
+               
 
                 {/* Environmental & Seasonal Data */}
                 <div>
@@ -216,7 +208,7 @@ InputField.displayName = 'InputField';const Input = () => {
 
                 {/* File Uploads Section */}
                 <div className="border-2 w-[56rem] text-orange-500 mt-[5rem] relative left-[-29rem]"></div>
-                <div className="-translate-x-[14rem]">
+                <div className="-translate-x-[14rem] hidden">
                   <div className="mt-6">
                     <h3 className="text-xl font-medium mb-4 text-white">Initial Data Upload</h3>
                     <div className="border-2 border-dashed border-slate-600 rounded-lg p-8 text-center flex flex-col items-center justify-center hover:border-orange-400 transition-colors">

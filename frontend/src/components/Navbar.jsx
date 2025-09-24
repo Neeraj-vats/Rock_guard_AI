@@ -18,14 +18,14 @@ export const Navbar = () => {
         <ul className="flex gap-8 items-center">
           {/* ✅ Use Link for routes */}
           <li>
-            <Link
+            <a
             to="/"
             
-              href="Home"
+              href="/"
               className="font-medium hover:text-orange-400 transition-colors duration-300"
             >
               Home
-            </Link>
+            </a>
           </li>
           <li>
             <a
@@ -36,12 +36,12 @@ export const Navbar = () => {
             </a>
           </li>
           <li>
-            <a
-              href="#how-it-works"
+            <Link
+              href="#"
               className="font-medium hover:text-orange-400 transition-colors duration-300"
             >
-              How it Works
-            </a>
+              Results
+            </Link>
           </li>
           <li>
             <Link
@@ -71,9 +71,9 @@ export const Navbar = () => {
             </a>
           </li>
           <li>
-            <Button className="text-lg font-semibold bg-gradient-to-r from-red-500 to-yellow-400 text-white hover:from-red-600 hover:to-yellow-500 transition-colors px-6 py-3">
+            <a href="#risk" className="text-lg font-semibold bg-gradient-to-r from-red-500 to-yellow-400 text-white hover:from-red-600 hover:to-yellow-500 transition-colors px-6 rounded-2xl py-3">
               Alerts
-            </Button>
+            </a>
           </li>
         </ul>
       </div>

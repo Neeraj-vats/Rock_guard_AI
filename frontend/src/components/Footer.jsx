@@ -30,9 +30,9 @@ export const Footer = () => {
           <p className="text-gray-400">Email: info@rockfallpredictor.com</p>
           <p className="text-gray-400">Phone: +91 98765 XXXXX</p>
           <div className="flex gap-3 mt-2">
-            <a href="#" className="hover:text-gray-300 transition">Twitter</a>
-            <a href="#" className="hover:text-gray-300 transition">LinkedIn</a>
-            <a href="#" className="hover:text-gray-300 transition">GitHub</a>
+            <a  className="hover:text-gray-300 transition">Twitter</a>
+            <a className="hover:text-gray-300 transition">LinkedIn</a>
+            <a className="hover:text-gray-300 transition">GitHub</a>
           </div>
         </div>
       </div>

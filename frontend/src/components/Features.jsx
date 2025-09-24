@@ -66,7 +66,7 @@ const Features = () => {
       title: "Reports & Action Plans",
       description:
         "Download risk assessment reports and recommended mitigation strategies instantly.",
-      badge: "PDF/CSV",
+      badge: "PDF",
     },
     {
       icon: <Settings className="h-8 w-8" />,
@@ -75,6 +75,13 @@ const Features = () => {
         "Easily integrate with low-cost monitoring hardware and open-source tools for scalability.",
       badge: "Flexible",
     },
+  ];
+
+  // Cards that should show "Coming Soon"
+  const comingSoonTitles = [
+    "Drone & DEM Integration",
+    "Environmental Tracking",
+    "Sensor Data Monitoring",
   ];
 
   return (
@@ -93,31 +100,59 @@ const Features = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((feature, index) => (
-            <Card
-              key={index}
-              className="group hover:border-orange-400 transition-all duration-300 hover:scale-105"
-            >
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="p-3 bg-gray-700 rounded-lg group-hover:bg-orange-400 transition-colors">
-                    <span className="text-gray-400 group-hover:text-white transition-colors">
-                      {feature.icon}
-                    </span>
+          {features.map((feature, index) => {
+            const isComingSoon = comingSoonTitles.includes(feature.title);
+
+            return (
+              <Card
+                key={index}
+                className="group relative hover:border-orange-400 transition-all duration-300 hover:scale-105 overflow-hidden"
+              >
+                {/* Overlay for Coming Soon */}
+                {isComingSoon && (
+                  <div className="absolute inset-0 bg-black/70 z-10 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-2xl font-bold transition-opacity duration-300">
+                    Coming Soon
                   </div>
-                  <Badge className="bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors">
-                    {feature.badge}
-                  </Badge>
-                </div>
-                <CardTitle className="text-xl font-semibold mt-4">
-                  {feature.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>{feature.description}</CardDescription>
-              </CardContent>
-            </Card>
-          ))}
+                )}
+
+                <CardHeader className={isComingSoon ? "pointer-events-none" : ""}>
+                  <div className="flex items-start justify-between">
+                    <div
+                      className={`p-3 rounded-lg transition-colors ${
+                        isComingSoon
+                          ? "bg-gray-700 group-hover:bg-gray-700"
+                          : "bg-gray-700 group-hover:bg-orange-400"
+                      }`}
+                    >
+                      <span
+                        className={`transition-colors ${
+                          isComingSoon
+                            ? "text-gray-400"
+                            : "text-gray-400 group-hover:text-white"
+                        }`}
+                      >
+                        {feature.icon}
+                      </span>
+                    </div>
+                    <Badge className="bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors">
+                      {feature.badge}
+                    </Badge>
+                  </div>
+                  <CardTitle className="text-xl font-semibold mt-4">
+                    {feature.title}
+                  </CardTitle>
+                </CardHeader>
+
+                <CardContent>
+                  <CardDescription
+                    className={isComingSoon ? "blur-sm pointer-events-none" : ""}
+                  >
+                    {feature.description}
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </div>
     </section>

@@ -76,12 +76,12 @@ const Hero = () => {
       <div className="container mx-auto px-4 relative z-10 mt-[5.8rem]">
         <div className="max-w-4xl">
           {/* Alert Banner */}
-          <div className={`transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+          {/* <div className={`transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-red-500/20 border border-red-500/30 text-red-300 mb-6 backdrop-blur-sm">
               <AlertTriangle className="w-4 h-4 mr-2 animate-pulse" />
               <span className="text-sm font-medium">Critical Infrastructure Protection Active</span>
             </div>
-          </div>
+          </div> */}
 
           {/* Main Heading */}
           <h1 className={`text-5xl md:text-7xl font-bold text-white mb-8 leading-tight transform transition-all duration-1000 delay-300 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>

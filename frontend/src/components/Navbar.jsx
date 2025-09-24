@@ -64,11 +64,27 @@ export const Navbar = () => {
 
           <li>
             <a
-              href="#contacts"
-              className="font-medium hover:text-orange-400 transition-colors duration-300"
-            >
-              Contact
-            </a>
+  href="#contacts"
+  onClick={(e) => {
+    e.preventDefault();
+
+    if (window.location.pathname !== "/") {
+      // Save intent to scroll after redirect
+      localStorage.setItem("scrollToContacts", "true");
+      // Go to home page
+      window.location.href = "/";
+      return;
+    }
+
+    // Already on home page, scroll immediately
+    const target = document.getElementById("contacts");
+    if (target) target.scrollIntoView({ behavior: "smooth" });
+  }}
+  className="cursor-pointer"
+>
+  Contact Us
+</a>
+
           </li>
           <li>
             <a href="#risk" className="text-lg font-semibold bg-gradient-to-r from-red-500 to-yellow-400 text-white hover:from-red-600 hover:to-yellow-500 transition-colors px-6 rounded-2xl py-3">

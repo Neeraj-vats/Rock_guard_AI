@@ -148,12 +148,12 @@ const Hero = () => {
               variant="outline"
               size="lg"
               className="group relative overflow-hidden border-2 border-red-500 text-red-400 hover:text-white hover:border-red-400 hover:shadow-lg hover:shadow-red-500/25"
-              onClick={() => window.location.href = '/alerts'}
+              
             >
               <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
               <div className="relative flex items-center">
                 <AlertTriangle className="h-6 w-6 mr-3 group-hover:animate-bounce" />
-                Emergency Alerts
+                <a href="#risk">Emergency Alerts</a>
               </div>
             </Button>
             

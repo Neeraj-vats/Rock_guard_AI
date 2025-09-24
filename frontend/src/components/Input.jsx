@@ -1,6 +1,6 @@
 import React, { useState, useCallback, memo } from "react";
 
-// mineSiteData.js
+// Optional: Sample mine site data
 export const mineSiteDataSamples = [
   {
     id: 1,
@@ -68,7 +68,7 @@ export const mineSiteDataSamples = [
   },
 ];
 
-// Alert component for displaying status
+// Alert popup for SAFE, WARNING, DANGER
 const AlertComponent = memo(({ alertSection, onClose }) => {
   if (!alertSection) return null;
 
@@ -101,9 +101,8 @@ const AlertComponent = memo(({ alertSection, onClose }) => {
 
   const config = alertConfig[alertSection];
   if (!config) return null;
-
   return (
-    <div className={`${config.bgColor} ${config.textColor} p-4 rounded-lg mb-6 border-2 ${config.borderColor} shadow-lg animate-pulse`}>
+    <div className={`${config.bgColor} ${config.textColor} p-4 rounded-lg mb-6 border-2 ${config.borderColor} shadow-lg`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <span className="text-2xl">{config.icon}</span>
@@ -112,71 +111,45 @@ const AlertComponent = memo(({ alertSection, onClose }) => {
             <p className="text-sm opacity-90">{config.message}</p>
           </div>
         </div>
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="text-white hover:text-gray-200 text-xl font-bold"
-          >
-            ×
-          </button>
-        )}
+        <button onClick={onClose} className="text-white hover:text-gray-200 text-xl font-bold">×</button>
       </div>
     </div>
   );
 });
 AlertComponent.displayName = 'AlertComponent';
 
-// Function to determine alert status based on form data
+// Utility: Decide alert based on form values
 const determineAlertStatus = (formData) => {
   const {
-    hazard_level,
-    slope_deg,
-    rock_hardness,
-    fracture,
-    rainfall_mm,
-    wind_speed,
-    rock_velocity
+    hazard_level, slope_deg, rock_hardness, fracture, rainfall_mm, wind_speed, rock_velocity
   } = formData;
 
-  // Convert string values to numbers for comparison
-  const slope = parseFloat(slope_deg) || 0;
-  const hardness = parseFloat(rock_hardness) || 0;
-  const fractureLevel = parseFloat(fracture) || 0;
-  const rainfall = parseFloat(rainfall_mm) || 0;
-  const windSpeed = parseFloat(wind_speed) || 0;
-  const rockVel = parseFloat(rock_velocity) || 0;
+  // Parse fields for calculation
+  const slope = parseFloat(slope_deg) || 0,
+        hardness = parseFloat(rock_hardness) || 0,
+        fractureLevel = parseFloat(fracture) || 0,
+        rainfall = parseFloat(rainfall_mm) || 0,
+        windSpeed = parseFloat(wind_speed) || 0,
+        rockVel = parseFloat(rock_velocity) || 0;
 
-  // Check for danger conditions
+  // Danger if any condition triggers (customize as needed)
   if (
     hazard_level?.toLowerCase() === 'high' ||
-    slope > 35 ||
-    hardness > 6 ||
-    fractureLevel > 3 ||
-    rainfall > 150 ||
-    windSpeed > 15 ||
-    rockVel > 10
-  ) {
-    return 'DANGER';
-  }
+    slope > 35
+   
+  ) return 'DANGER';
 
-  // Check for warning conditions
+  // Warning threshold
   if (
     hazard_level?.toLowerCase() === 'medium' ||
-    slope > 20 ||
-    hardness > 4 ||
-    fractureLevel > 2 ||
-    rainfall > 100 ||
-    windSpeed > 10 ||
-    rockVel > 5
-  ) {
-    return 'WARNING';
-  }
+    slope > 30 
+  ) return 'WARNING';
 
-  // Safe conditions
+  // Otherwise safe
   return 'SAFE';
 };
 
-// Move components outside to prevent recreation on each render
+// Fast, memoized radio and input components
 const MineTypeRadio = memo(({ label, value, name, checked, onChange }) => (
   <label className="inline-flex items-center cursor-pointer">
     <input
@@ -211,6 +184,7 @@ const InputField = memo(({ label, name, type = "text", value, onChange }) => (
 ));
 InputField.displayName = 'InputField';
 
+// Main Form Component
 const Input = () => {
   const [formData, setFormData] = useState({
     siteName: "",
@@ -252,90 +226,42 @@ const Input = () => {
     topographyMaps: null,
   });
 
-  // Alert state
   const [alertSection, setAlertSection] = useState("");
   const [showAlert, setShowAlert] = useState(false);
 
-  // Use useCallback to prevent function recreation
+  // Standard field change handler
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    
-    // Real-time alert checking for critical fields
-    if (['hazard_level', 'slope_deg', 'rock_hardness', 'fracture', 'rainfall_mm', 'wind_speed', 'rock_velocity'].includes(name)) {
-      const updatedFormData = { ...formData, [name]: value };
-      const alertStatus = determineAlertStatus(updatedFormData);
-      setAlertSection(alertStatus);
-      setShowAlert(true);
-    }
-  }, [formData]);
+  }, []);
 
   const handleFileChange = useCallback((e, fileType) => {
     const file = e.target.files[0];
     setUploadedFiles(prev => ({ ...prev, [fileType]: file }));
   }, []);
 
+  // Only show alert when form is submitted
   const handleSubmit = useCallback((e) => {
     e.preventDefault();
-    
-    // Determine final alert status
-    const finalAlertStatus = determineAlertStatus(formData);
-    setAlertSection(finalAlertStatus);
-    setShowAlert(true);
-    
-    console.log("Form Submitted:", formData);
-    console.log("Uploaded Files:", uploadedFiles);
-    console.log("Alert Status:", finalAlertStatus);
-    console.log("Form submitted! Check console for values.");
-    
-    // Scroll to top to show alert
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [formData, uploadedFiles]);
-
-  const handleCloseAlert = useCallback(() => {
-    setShowAlert(false);
-  }, []);
-
-  // Quick test function to demo different alert states
-  const testAlert = useCallback((status) => {
+    const status = determineAlertStatus(formData);
     setAlertSection(status);
     setShowAlert(true);
-  }, []);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    console.log("Form Submitted:", formData);
+    console.log("Files:", uploadedFiles);
+    console.log("Alert Status:", status);
+  }, [formData, uploadedFiles]);
+
+  const handleCloseAlert = useCallback(() => setShowAlert(false), []);
 
   return (
     <div className="h-screen w-screen relative top-[4rem]">
       <div className="flex justify-center items-center bg-gradient-to-br from-slate-800 via-slate-900 to-blue-900 p-4">
         <div className="bg-slate-800/80 backdrop-blur-sm border border-slate-700 p-8 rounded-2xl shadow-2xl w-full max-w-4xl mt-[7rem]">
-          
-          {/* Alert Display */}
-          {showAlert && (
-            <AlertComponent 
-              alertSection={alertSection} 
-              onClose={handleCloseAlert}
-            />
-          )}
 
-          {/* Demo Buttons for Testing Alerts */}
-          <div className="flex justify-center space-x-4 mb-6">
-            <button
-              onClick={() => testAlert('SAFE')}
-              className="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700"
-            >
-              Test Safe Alert
-            </button>
-            <button
-              onClick={() => testAlert('WARNING')}
-              className="bg-yellow-600 text-white px-4 py-2 rounded text-sm hover:bg-yellow-700"
-            >
-              Test Warning Alert
-            </button>
-            <button
-              onClick={() => testAlert('DANGER')}
-              className="bg-red-600 text-white px-4 py-2 rounded text-sm hover:bg-red-700"
-            >
-              Test Danger Alert
-            </button>
-          </div>
+          {showAlert && (
+            <AlertComponent alertSection={alertSection} onClose={handleCloseAlert} />
+          )}
 
           <h2 className="text-4xl font-light text-center mb-1 text-white">
             Input Mine Site Data
@@ -346,9 +272,7 @@ const Input = () => {
 
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Left Column */}
               <div className="space-y-6">
-                {/* Geotechnical & Rock Data */}
                 <div>
                   <h3 className="text-xl font-medium mb-4 text-white">Geotechnical Data</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -366,10 +290,7 @@ const Input = () => {
                   </div>
                 </div>
               </div>
-
-              {/* Right Column */}
               <div className="space-y-6">
-                {/* Environmental & Seasonal Data */}
                 <div>
                   <h3 className="text-xl font-medium mb-4 text-white">Environmental & Seasonal Data</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -386,8 +307,6 @@ const Input = () => {
                     <InputField label="Hazard Level" name="hazard_level" value={formData.hazard_level} onChange={handleChange} />
                   </div>
                 </div>
-
-                {/* Rockfall-Specific Data */}
                 <div className="mt-6">
                   <h3 className="text-xl font-medium mb-4 text-white">Rockfall-Specific Data</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -396,79 +315,42 @@ const Input = () => {
                     <InputField label="Rock Velocity" name="rock_velocity" value={formData.rock_velocity} onChange={handleChange} />
                   </div>
                 </div>
-
-                {/* File Uploads Section */}
                 <div className="border-2 w-[56rem] text-orange-500 mt-[5rem] relative left-[-29rem]"></div>
                 <div className="-translate-x-[14rem] hidden">
                   <div className="mt-6">
                     <h3 className="text-xl font-medium mb-4 text-white">Initial Data Upload</h3>
                     <div className="border-2 border-dashed border-slate-600 rounded-lg p-8 text-center flex flex-col items-center justify-center hover:border-orange-400 transition-colors">
-                      <svg
-                        className="w-16 h-16 text-gray-500 mb-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v9"
-                        ></path>
+                      <svg className="w-16 h-16 text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v9"></path>
                       </svg>
                       <p className="text-gray-400 text-lg">Drag & Drop Files Here</p>
                       <p className="text-orange-400 font-medium text-lg">or Click to Upload</p>
                     </div>
                   </div>
-
-                  {/* Specific Upload Buttons and File Display */}
                   <div className="space-y-4 mt-6">
                     <div>
-                      <label
-                        htmlFor="geological-surveys-upload"
-                        className="w-full bg-orange-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-orange-600 transition duration-200 block text-center cursor-pointer"
-                      >
+                      <label htmlFor="geological-surveys-upload" className="w-full bg-orange-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-orange-600 transition duration-200 block text-center cursor-pointer">
                         Upload Geological Surveys
                       </label>
-                      <input
-                        id="geological-surveys-upload"
-                        type="file"
-                        className="hidden"
-                        onChange={(e) => handleFileChange(e, "geologicalSurveys")}
-                      />
+                      <input id="geological-surveys-upload" type="file" className="hidden" onChange={(e) => handleFileChange(e, "geologicalSurveys")} />
                       {uploadedFiles.geologicalSurveys && (
                         <p className="mt-2 text-sm text-gray-400 truncate">File: {uploadedFiles.geologicalSurveys.name}</p>
                       )}
                     </div>
-
                     <div>
-                      <label
-                        htmlFor="topography-maps-upload"
-                        className="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition duration-200 block text-center cursor-pointer"
-                      >
+                      <label htmlFor="topography-maps-upload" className="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition duration-200 block text-center cursor-pointer">
                         Upload Topography Maps
                       </label>
-                      <input
-                        id="topography-maps-upload"
-                        type="file"
-                        className="hidden"
-                        onChange={(e) => handleFileChange(e, "topographyMaps")}
-                      />
+                      <input id="topography-maps-upload" type="file" className="hidden" onChange={(e) => handleFileChange(e, "topographyMaps")} />
                       {uploadedFiles.topographyMaps && (
                         <p className="mt-2 text-sm text-gray-400 truncate">File: {uploadedFiles.topographyMaps.name}</p>
                       )}
                     </div>
-
                     <div>
                       <label className="block text-gray-300 font-medium mb-1 mt-4">
                         Date of Data Collection
                       </label>
-                      <input
-                        type="date"
-                        name="dataCollectionDate"
-                        value={formData.dataCollectionDate}
-                        onChange={handleChange}
+                      <input type="date" name="dataCollectionDate" value={formData.dataCollectionDate} onChange={handleChange}
                         className="w-full p-2 border border-slate-600 bg-slate-700/50 text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 [&::-webkit-calendar-picker-indicator]:invert"
                       />
                     </div>
@@ -476,30 +358,15 @@ const Input = () => {
                 </div>
               </div>
             </div>
-
-            {/* Submit Button */}
             <div className="flex justify-center mt-8">
               <button
                 type="submit"
                 className="bg-orange-500 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-orange-600 transition duration-200 flex items-center"
               >
                 Submit & Analyze Data
-                <svg
-                  className="w-4 h-4 ml-2"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z"
-                    clipRule="evenodd"
-                  ></path>
-                  <path
-                    fillRule="evenodd"
-                    d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z"
-                    clipRule="evenodd"
-                  ></path>
+                <svg className="w-4 h-4 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clipRule="evenodd"/>
+                  <path fillRule="evenodd" d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clipRule="evenodd"/>
                 </svg>
               </button>
             </div>

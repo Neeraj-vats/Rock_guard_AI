@@ -37,6 +37,7 @@ export const Navbar = () => {
           </li>
           <li>
             <Link
+            to={"/result"}
               href="#"
               className="font-medium hover:text-orange-400 transition-colors duration-300"
             >

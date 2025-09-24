@@ -79,7 +79,7 @@ const processDataForBarChart = (data, categoryKey) => {
 };
 
 // Main App component
-const App = () => {
+const Result = () => {
   const [lineData, setLineData] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [activeTab, setActiveTab] = useState('graph');
@@ -497,4 +497,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default Result;

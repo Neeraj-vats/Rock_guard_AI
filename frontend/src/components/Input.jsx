@@ -1,5 +1,181 @@
 import React, { useState, useCallback, memo } from "react";
 
+// mineSiteData.js
+export const mineSiteDataSamples = [
+  {
+    id: 1,
+    siteName: "Alpha Mine",
+    location: "Region A",
+    mineType: "open-pit",
+    latitude: 34.56,
+    longitude: 79.12,
+    elevation: 450,
+    slope_deg: 12,
+    aspect_deg: 75,
+    distance_to_rock: 30,
+    rock_type: "Granite",
+    soil_type: "Loamy",
+    lithology: "Sedimentary",
+    rock_hardness: 4,
+    fracture: 1,
+    rainfall_mm: 80,
+    snow_mm: 10,
+    temperature: 25,
+    wind_speed: 7,
+    humidity: 60,
+    vegetation: "Sparse",
+    land_cover: "Rocky",
+    ndvi: 0.35,
+    rock_size: 2,
+    rock_volume: 20,
+    rock_velocity: 3,
+    month: "June",
+    season: "Summer",
+    hazard_level: "Low",
+    alertSection: "SAFE",
+  },
+  {
+    id: 2,
+    siteName: "Beta Mine",
+    location: "Region B",
+    mineType: "underground",
+    latitude: 45.67,
+    longitude: 82.34,
+    elevation: 1200,
+    slope_deg: 40,
+    aspect_deg: 150,
+    distance_to_rock: 120,
+    rock_type: "Shale",
+    soil_type: "Sandy",
+    lithology: "Metamorphic",
+    rock_hardness: 7,
+    fracture: 4,
+    rainfall_mm: 200,
+    snow_mm: 30,
+    temperature: 45,
+    wind_speed: 20,
+    humidity: 85,
+    vegetation: "Dense",
+    land_cover: "Mountainous",
+    ndvi: 0.75,
+    rock_size: 10,
+    rock_volume: 200,
+    rock_velocity: 15,
+    month: "December",
+    season: "Winter",
+    hazard_level: "High",
+    alertSection: "DANGER",
+  },
+];
+
+// Alert component for displaying status
+const AlertComponent = memo(({ alertSection, onClose }) => {
+  if (!alertSection) return null;
+
+  const alertConfig = {
+    DANGER: {
+      bgColor: 'bg-red-600',
+      textColor: 'text-white',
+      icon: '⚠️',
+      title: 'DANGER ALERT',
+      message: 'High hazard risk detected at this site! Take immediate precautions.',
+      borderColor: 'border-red-700'
+    },
+    SAFE: {
+      bgColor: 'bg-green-600',
+      textColor: 'text-white',
+      icon: '✅',
+      title: 'SAFE STATUS',
+      message: 'This site shows low hazard risk. Normal operations can proceed.',
+      borderColor: 'border-green-700'
+    },
+    WARNING: {
+      bgColor: 'bg-yellow-600',
+      textColor: 'text-white',
+      icon: '⚡',
+      title: 'WARNING',
+      message: 'Medium hazard risk detected. Monitor conditions closely.',
+      borderColor: 'border-yellow-700'
+    }
+  };
+
+  const config = alertConfig[alertSection];
+  if (!config) return null;
+
+  return (
+    <div className={`${config.bgColor} ${config.textColor} p-4 rounded-lg mb-6 border-2 ${config.borderColor} shadow-lg animate-pulse`}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <span className="text-2xl">{config.icon}</span>
+          <div>
+            <h3 className="font-bold text-lg">{config.title}</h3>
+            <p className="text-sm opacity-90">{config.message}</p>
+          </div>
+        </div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="text-white hover:text-gray-200 text-xl font-bold"
+          >
+            ×
+          </button>
+        )}
+      </div>
+    </div>
+  );
+});
+AlertComponent.displayName = 'AlertComponent';
+
+// Function to determine alert status based on form data
+const determineAlertStatus = (formData) => {
+  const {
+    hazard_level,
+    slope_deg,
+    rock_hardness,
+    fracture,
+    rainfall_mm,
+    wind_speed,
+    rock_velocity
+  } = formData;
+
+  // Convert string values to numbers for comparison
+  const slope = parseFloat(slope_deg) || 0;
+  const hardness = parseFloat(rock_hardness) || 0;
+  const fractureLevel = parseFloat(fracture) || 0;
+  const rainfall = parseFloat(rainfall_mm) || 0;
+  const windSpeed = parseFloat(wind_speed) || 0;
+  const rockVel = parseFloat(rock_velocity) || 0;
+
+  // Check for danger conditions
+  if (
+    hazard_level?.toLowerCase() === 'high' ||
+    slope > 35 ||
+    hardness > 6 ||
+    fractureLevel > 3 ||
+    rainfall > 150 ||
+    windSpeed > 15 ||
+    rockVel > 10
+  ) {
+    return 'DANGER';
+  }
+
+  // Check for warning conditions
+  if (
+    hazard_level?.toLowerCase() === 'medium' ||
+    slope > 20 ||
+    hardness > 4 ||
+    fractureLevel > 2 ||
+    rainfall > 100 ||
+    windSpeed > 10 ||
+    rockVel > 5
+  ) {
+    return 'WARNING';
+  }
+
+  // Safe conditions
+  return 'SAFE';
+};
+
 // Move components outside to prevent recreation on each render
 const MineTypeRadio = memo(({ label, value, name, checked, onChange }) => (
   <label className="inline-flex items-center cursor-pointer">
@@ -33,7 +209,9 @@ const InputField = memo(({ label, name, type = "text", value, onChange }) => (
     />
   </div>
 ));
-InputField.displayName = 'InputField';const Input = () => {
+InputField.displayName = 'InputField';
+
+const Input = () => {
   const [formData, setFormData] = useState({
     siteName: "",
     location: "",
@@ -74,11 +252,23 @@ InputField.displayName = 'InputField';const Input = () => {
     topographyMaps: null,
   });
 
+  // Alert state
+  const [alertSection, setAlertSection] = useState("");
+  const [showAlert, setShowAlert] = useState(false);
+
   // Use useCallback to prevent function recreation
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-  }, []);
+    
+    // Real-time alert checking for critical fields
+    if (['hazard_level', 'slope_deg', 'rock_hardness', 'fracture', 'rainfall_mm', 'wind_speed', 'rock_velocity'].includes(name)) {
+      const updatedFormData = { ...formData, [name]: value };
+      const alertStatus = determineAlertStatus(updatedFormData);
+      setAlertSection(alertStatus);
+      setShowAlert(true);
+    }
+  }, [formData]);
 
   const handleFileChange = useCallback((e, fileType) => {
     const file = e.target.files[0];
@@ -87,15 +277,66 @@ InputField.displayName = 'InputField';const Input = () => {
 
   const handleSubmit = useCallback((e) => {
     e.preventDefault();
+    
+    // Determine final alert status
+    const finalAlertStatus = determineAlertStatus(formData);
+    setAlertSection(finalAlertStatus);
+    setShowAlert(true);
+    
     console.log("Form Submitted:", formData);
     console.log("Uploaded Files:", uploadedFiles);
+    console.log("Alert Status:", finalAlertStatus);
     console.log("Form submitted! Check console for values.");
+    
+    // Scroll to top to show alert
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [formData, uploadedFiles]);
+
+  const handleCloseAlert = useCallback(() => {
+    setShowAlert(false);
+  }, []);
+
+  // Quick test function to demo different alert states
+  const testAlert = useCallback((status) => {
+    setAlertSection(status);
+    setShowAlert(true);
+  }, []);
 
   return (
     <div className="h-screen w-screen relative top-[4rem]">
       <div className="flex justify-center items-center bg-gradient-to-br from-slate-800 via-slate-900 to-blue-900 p-4">
         <div className="bg-slate-800/80 backdrop-blur-sm border border-slate-700 p-8 rounded-2xl shadow-2xl w-full max-w-4xl mt-[7rem]">
+          
+          {/* Alert Display */}
+          {showAlert && (
+            <AlertComponent 
+              alertSection={alertSection} 
+              onClose={handleCloseAlert}
+            />
+          )}
+
+          {/* Demo Buttons for Testing Alerts */}
+          <div className="flex justify-center space-x-4 mb-6">
+            <button
+              onClick={() => testAlert('SAFE')}
+              className="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700"
+            >
+              Test Safe Alert
+            </button>
+            <button
+              onClick={() => testAlert('WARNING')}
+              className="bg-yellow-600 text-white px-4 py-2 rounded text-sm hover:bg-yellow-700"
+            >
+              Test Warning Alert
+            </button>
+            <button
+              onClick={() => testAlert('DANGER')}
+              className="bg-red-600 text-white px-4 py-2 rounded text-sm hover:bg-red-700"
+            >
+              Test Danger Alert
+            </button>
+          </div>
+
           <h2 className="text-4xl font-light text-center mb-1 text-white">
             Input Mine Site Data
           </h2>
@@ -103,58 +344,10 @@ InputField.displayName = 'InputField';const Input = () => {
             Please enter the required information and upload initial site files
           </p>
 
-          {/* ✅ Changed to form */}
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Left Column */}
               <div className="space-y-6">
-                {/* Site Information */}
-                {/* <div>
-                  <h3 className="text-xl font-medium mb-4 text-white">Site Information</h3>
-                  <div className="space-y-4">
-                    <InputField
-                      label="Mine Site Name"
-                      name="siteName"
-                      value={formData.siteName}
-                      onChange={handleChange}
-                    />
-                    <InputField
-                      label="Location"
-                      name="location"
-                      value={formData.location}
-                      onChange={handleChange}
-                    />
-                    <div>
-                      <label className="block text-gray-300 font-medium mb-2">
-                        Mine Type
-                      </label>
-                      <div className="flex space-x-4">
-                        <MineTypeRadio
-                          label="Open Pit"
-                          value="open-pit"
-                          name="mineType"
-                          checked={formData.mineType === "open-pit"}
-                          onChange={handleChange}
-                        />
-                        <MineTypeRadio
-                          label="Underground"
-                          value="underground"
-                          name="mineType"
-                          checked={formData.mineType === "underground"}
-                          onChange={handleChange}
-                        />
-                        <MineTypeRadio
-                          label="Quarry"
-                          value="quarry"
-                          name="mineType"
-                          checked={formData.mineType === "quarry"}
-                          onChange={handleChange}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div> */}
-
                 {/* Geotechnical & Rock Data */}
                 <div>
                   <h3 className="text-xl font-medium mb-4 text-white">Geotechnical Data</h3>
@@ -176,8 +369,6 @@ InputField.displayName = 'InputField';const Input = () => {
 
               {/* Right Column */}
               <div className="space-y-6">
-               
-
                 {/* Environmental & Seasonal Data */}
                 <div>
                   <h3 className="text-xl font-medium mb-4 text-white">Environmental & Seasonal Data</h3>
@@ -286,7 +477,7 @@ InputField.displayName = 'InputField';const Input = () => {
               </div>
             </div>
 
-            {/* ✅ Fixed submit button (no onClick, only type="submit") */}
+            {/* Submit Button */}
             <div className="flex justify-center mt-8">
               <button
                 type="submit"

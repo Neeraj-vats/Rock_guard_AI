@@ -18,12 +18,14 @@ export const Navbar = () => {
         <ul className="flex gap-8 items-center">
           {/* ✅ Use Link for routes */}
           <li>
-            <a
-              href="#Home"
+            <Link
+            to="/"
+            
+              href="Home"
               className="font-medium hover:text-orange-400 transition-colors duration-300"
             >
               Home
-            </a>
+            </Link>
           </li>
           <li>
             <a

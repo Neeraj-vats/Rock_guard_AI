@@ -44,14 +44,14 @@ export const Navbar = () => {
               Results
             </Link>
           </li>
-          <li>
+          {/* <li>
             <Link
               to="/dashboard"
               className="font-medium hover:text-orange-400 transition-colors duration-300"
             >
               Dashboard
             </Link>
-          </li>
+          </li> */}
 
           {/* ✅ Route to Analyze page */}
           <li>

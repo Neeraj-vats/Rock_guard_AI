@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom"; // ✅ import Link
-import Button from "./ui/button";
+import Button from "./ui/Button";
 
 export const Navbar = () => {
   return (
@@ -18,12 +18,12 @@ export const Navbar = () => {
         <ul className="flex gap-8 items-center">
           {/* ✅ Use Link for routes */}
           <li>
-            <Link
-              to="/"
+            <a
+              href="#Home"
               className="font-medium hover:text-orange-400 transition-colors duration-300"
             >
               Home
-            </Link>
+            </a>
           </li>
           <li>
             <a

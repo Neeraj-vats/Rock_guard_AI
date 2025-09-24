@@ -48,7 +48,7 @@ const processDataForBarChart = (data, categoryKey) => {
 };
 
 // Main App component
-const App = () => {
+const Result = () => {
   const [lineData, setLineData] = useState(initialLineData);
   const [tableData, setTableData] = useState(initialTableData);
   const [activeTab, setActiveTab] = useState('graph');
@@ -126,14 +126,14 @@ const App = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row h-screen font-sans bg-gray-900 text-gray-100 p-4 items-start">
+    <div className="flex flex-col md:flex-row h-[80rem] font-sans bg-gray-900 text-gray-100 p-4 items-start">
       
       {/* Sidebar for user inputs */}
-      <div className="md:w-1/4 w-full bg-gray-800 p-6 rounded-2xl shadow-xl space-y-6 md:mr-4 mb-4 md:mb-0">
+      <div className="md:w-1/4 w-full mt-[6rem] bg-gray-8   00 p-6 rounded-2xl shadow-xl space-y-6 md:mr-4 mb-4 md:mb-0">
         <h2 className="text-xl font-bold text-blue-400">Dashboard Controls</h2>
 
         {/* Line Chart Inputs */}
-        <div className="space-y-4">
+        <div className="space-y-4 ">
           <h3 className="text-lg font-semibold text-gray-200 border-b border-gray-700 pb-2">Line Chart Options</h3>
           <div>
             <label htmlFor="line-title" className="block text-sm font-medium text-gray-400 mb-1">Chart Title</label>
@@ -171,7 +171,7 @@ const App = () => {
         </div>
 
         {/* Bar Chart Inputs */}
-        <div className="space-y-4 pt-6">
+        <div className="space-y-4 pt-6 ">
           <h3 className="text-lg font-semibold text-gray-200 border-b border-gray-700 pb-2">Bar Chart Options</h3>
           <div>
             <label htmlFor="bar-title" className="block text-sm font-medium text-gray-400 mb-1">Chart Title</label>
@@ -230,7 +230,7 @@ const App = () => {
       </div>
 
       {/* Main content area for charts and table */}
-      <div className="flex-1 bg-gray-800 p-6 rounded-2xl shadow-xl space-y-6">
+      <div className="flex-1 translate-y-[7rem] bg-gray-800 p-6 rounded-2xl shadow-xl space-y-6">
         {/* Tabs for switching between Graph and Table view */}
         <div className="flex justify-center mb-4 border-b-2 border-gray-700">
           <button
@@ -430,4 +430,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default Result;

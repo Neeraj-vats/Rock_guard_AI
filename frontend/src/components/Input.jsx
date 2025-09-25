@@ -113,6 +113,28 @@ const Input = () => {
     }));
     
   };
+  // Geolocation handler
+const handleGetLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          // On success, update the state
+          setFormData((prev) => ({
+            ...prev,
+            latitude: position.coords.latitude.toFixed(5), // .toFixed for cleaner input
+            longitude: position.coords.longitude.toFixed(5),
+          }));
+        },
+        (error) => {
+          // Handle errors (e.g., user denies permission)
+          console.error("Error getting geolocation:", error);
+          alert("Could not retrieve your location. Please enter it manually.");
+        }
+      );
+    } else {
+      alert("Geolocation is not supported by your browser.");
+    }
+  };
 
   // Submit handler with axios
   const handleSubmit = async (e) => {
@@ -157,6 +179,15 @@ const Input = () => {
                 <h3 className="text-xl font-medium mb-4 text-white">
                   Geotechnical Data
                 </h3>
+                <div className="mb-4">
+                  <button
+                    type="button" // Important: prevents form submission
+                    onClick={handleGetLocation}
+                    className="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-blue-700 transition duration-200 flex items-center justify-center"
+                  >
+                    📍 Use My Current Location
+                  </button>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <InputField label="Latitude" name="latitude" value={formData.latitude} onChange={handleChange} />
                   <InputField label="Longitude" name="longitude" value={formData.longitude} onChange={handleChange} />

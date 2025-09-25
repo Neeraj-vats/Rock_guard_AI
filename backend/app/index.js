@@ -1,9 +1,9 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
-const { User, GeoData } = require("./db"); // Import models from db.js
-const { SignupSchema  } = require("./zodtypes/types"); // Assuming Zod types are in this path
+
 const { safeParse } = require("zod");
+const { SignupSchema , formSchema } = require("../zodtypes/types");
 
 const app = express();
 const port = 5000;
@@ -12,6 +12,7 @@ const port = 5000;
 app.use(cors());
 app.use(express.json());
 
+const Data = []
 
 // --- API Endpoints --- //
 
@@ -90,14 +91,21 @@ app.use(express.json());
 
 app.post("/api/data", async (req, res) => {
     const data = req.body;
-    const value = safeParse(formSchema, data);
-    console.log("Received data for analysis:", data);
+    const parsedData = formSchema.safeParse(data);
+    if(!parsedData.success){
+        return res.status(400).json({ error: parsedData.error.errors });
+    }
+    Data.push(parsedData.data);
+    console.log(Data);
+    res.status(200).json({message: "Data received successfully", data: parsedData.data});
+
+    
 })
 
 // --- Start Server --- //
 app.listen(port, () => {
     // We require db.js here to ensure the database connection is initiated
     // when the server starts.
-    require('./db'); 
+    
     console.log(`Server is running on port ${port}`);
 });

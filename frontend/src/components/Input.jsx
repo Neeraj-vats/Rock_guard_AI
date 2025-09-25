@@ -111,15 +111,16 @@ const Input = () => {
       ...prev,
       [name]: value,
     }));
+    
   };
 
   // Submit handler with axios
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/api/analyze", formData, {
-        headers: { "Content-Type": "application/json" },
-      });
+      const res = await axios.post("http://localhost:5000/api/data", formData
+        
+      );
 
       console.log("Server response:", res.data);
 

@@ -1,18 +1,16 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
-const multer = require("multer");
 const cors = require("cors");
 const { User, GeoData } = require("./db"); // Import models from db.js
-const { SignupSchema } = require("./zodtypes/types"); // Assuming Zod types are in this path
+const { SignupSchema  } = require("./zodtypes/types"); // Assuming Zod types are in this path
+const { safeParse } = require("zod");
 
 const app = express();
-const port = 3000;
+const port = 5000;
 
 // --- Middleware --- //
 app.use(cors());
 app.use(express.json());
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
 
 
 // --- API Endpoints --- //
@@ -20,74 +18,81 @@ const upload = multer({ storage: storage });
 /**
  * Endpoint for user signup.
  */
-app.post("/signup", async (req, res) => {
-    const data = req.body;
-    const parsedData = SignupSchema.safeParse(data);
+// app.post("/signup", async (req, res) => {
+//     const data = req.body;
+//     const parsedData = SignupSchema.safeParse(data);
 
-    if (!parsedData.success) {
-        return res.status(400).json({ error: parsedData.error.errors });
-    }
+//     if (!parsedData.success) {
+//         return res.status(400).json({ error: parsedData.error.errors });
+//     }
 
-    const { username, password } = parsedData.data;
+//     const { username, password } = parsedData.data;
 
-    try {
-        const existingUser = await User.findOne({ username });
-        if (existingUser) {
-            return res.status(409).json({ message: "Username already exists." });
-        }
+//     try {
+//         const existingUser = await User.findOne({ username });
+//         if (existingUser) {
+//             return res.status(409).json({ message: "Username already exists." });
+//         }
 
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
+//         const saltRounds = 10;
+//         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        const newUser = new User({ username, password: hashedPassword });
-        await newUser.save();
+//         const newUser = new User({ username, password: hashedPassword });
+//         await newUser.save();
         
-        console.log(`New user created: ${username}`);
-        res.status(201).json({ message: "User created successfully!" });
+//         console.log(`New user created: ${username}`);
+//         res.status(201).json({ message: "User created successfully!" });
 
-    } catch (error) {
-        console.error("Error during signup:", error);
-        res.status(500).json({ error: "Could not create user." });
-    }
-});
+//     } catch (error) {
+//         console.error("Error during signup:", error);
+//         res.status(500).json({ error: "Could not create user." });
+//     }
+// });
 
-/**
- * Endpoint to handle form data submission.
- */
-app.post("/api/geodata", upload.fields([
-    { name: 'geologicalSurveys', maxCount: 1 },
-    { name: 'topographyMaps', maxCount: 1 }
-]), async (req, res) => {
+// /**
+//  * Endpoint to handle form data submission.
+//  */
+// app.post("/api/geodata", upload.fields([
+//     { name: 'geologicalSurveys', maxCount: 1 },
+//     { name: 'topographyMaps', maxCount: 1 }
+// ]), async (req, res) => {
     
-    const { jsonData } = req.body;
-    if (!jsonData) {
-        return res.status(400).json({ error: "Form data is missing." });
-    }
+//     const { jsonData } = req.body;
+//     if (!jsonData) {
+//         return res.status(400).json({ error: "Form data is missing." });
+//     }
 
-    try {
-        const parsedFormData = JSON.parse(jsonData);
+//     try {
+//         const parsedFormData = JSON.parse(jsonData);
 
-        // Placeholder for file upload logic (e.g., to S3)
-        // const surveyUrl = await uploadToCloud(req.files.geologicalSurveys[0]);
-        // parsedFormData.geologicalSurveyUrl = surveyUrl;
+//         // Placeholder for file upload logic (e.g., to S3)
+//         // const surveyUrl = await uploadToCloud(req.files.geologicalSurveys[0]);
+//         // parsedFormData.geologicalSurveyUrl = surveyUrl;
         
-        const newGeoData = new GeoData(parsedFormData);
-        const savedData = await newGeoData.save();
+//         const newGeoData = new GeoData(parsedFormData);
+//         const savedData = await newGeoData.save();
 
-        console.log("--- New GeoData Record Saved ---");
-        console.log(savedData);
+//         console.log("--- New GeoData Record Saved ---");
+//         console.log(savedData);
 
-        res.status(201).json({ 
-            message: "Data saved successfully!",
-            data: savedData 
-        });
+//         res.status(201).json({ 
+//             message: "Data saved successfully!",
+//             data: savedData 
+//         });
 
-    } catch (error) {
-        console.error("Error processing form data:", error);
-        res.status(500).json({ error: "Failed to save form data." });
-    }
-});
+//     } catch (error) {
+//         console.error("Error processing form data:", error);
+//         res.status(500).json({ error: "Failed to save form data." });
+//     }
+// });
 
+
+
+app.post("/api/data", async (req, res) => {
+    const data = req.body;
+    const value = safeParse(formSchema, data);
+    console.log("Received data for analysis:", data);
+})
 
 // --- Start Server --- //
 app.listen(port, () => {

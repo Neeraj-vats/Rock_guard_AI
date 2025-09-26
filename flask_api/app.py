@@ -1,20 +1,27 @@
 from flask import Flask, request, jsonify
 import tensorflow as tf
 import joblib
-import numpy as np
 import pandas as pd
-import sklearn 
 
 # Initialize Flask app
 app = Flask(__name__)
 
 # Load preprocessor and model
-preprocessor = joblib.load("preprocessor.joblib")
-model = tf.keras.models.load_model("rockfall_model.h5")
+preprocessor = joblib.load("preprocessor.pkl")
+model = tf.keras.models.load_model("rockfall_model.h5", compile=False)
 
-# Example feature order
-categorical_features = ['Rock_Type', 'Soil_Type', 'Season']
-numerical_features = ['Slope_deg', 'Distance_to_fault_km', 'Rock_Volume_m3', 'Prior_Events']
+# Features used during training
+categorical_features = ["Rock_Type", "Soil_Type", "Vegetation", "Land_Cover", "Season"]
+
+numerical_features = [
+    "Latitude", "Longitude", "Elevation_m", "Slope_deg",
+    "Distance_to_fault_km", "Rock_Hardness", "Fracture_Density",
+    "Rainfall_mm", "Temperature_C", "Wind_speed_kmh", "NDVI",
+    "Rock_Size_cm", "Rock_Volume_m3", "Rock_Velocity_mps",
+    "Prior_Events"
+]
+
+all_features = numerical_features + categorical_features
 
 @app.route('/')
 def home():
@@ -26,8 +33,14 @@ def predict():
         # Get JSON input
         data = request.get_json()
 
-        # Convert input to DataFrame
-        input_df = pd.DataFrame([data], columns=numerical_features + categorical_features)
+        # Convert to DataFrame with correct columns
+        input_df = pd.DataFrame([data], columns=all_features)
+
+        # Cast types
+        for col in numerical_features:
+            input_df[col] = pd.to_numeric(input_df[col], errors="coerce")
+        for col in categorical_features:
+            input_df[col] = input_df[col].astype(str)
 
         # Preprocess input
         processed_input = preprocessor.transform(input_df)

@@ -195,26 +195,30 @@ const Input = () => {
   const [formData, setFormData] = useState({
     latitude: "",
     longitude: "",
+    elevation_m: "",
     slope_deg: "",
-    distance_to_rock: "",
+    distance_to_fault_km: "",
+    rock_hardness: "",
+    fracture_density: "",
+    rainfall_mm: "",
+    temperature_c: "",
+    wind_speed_kmh: "",
+    ndvi: "",
+    rock_size_cm: "",
+    rock_volume_m3: "",
+    rock_velocity_mps: "",
+    prior_events: "",
+    land_cover: "",
+    vegetation: "",
     rock_type: "",
     soil_type: "",
-    rock_size: "",
-    rock_volume: "",
-    prior_events: "",
-    rainfall_mm: "",
-    snow_mm: "",
-    temperature: "",
-    wind_speed: "",
-    humidity: "",
-    vegetation: "",
-    land_cover: "",
-    rock_velocity: "",
+    season: "",
   });
 
   const [alertSection, setAlertSection] = useState("");
   const [showAlert, setShowAlert] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -244,20 +248,90 @@ const Input = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const validateForm = () => {
+    const requiredFields = ['latitude', 'longitude', 'elevation_m', 'slope_deg'];
+    const missingFields = requiredFields.filter(field => !formData[field]);
     
+    if (missingFields.length > 0) {
+      setError(`Please fill in required fields: ${missingFields.join(', ')}`);
+      return false;
+    }
+    
+    setError("");
+    return true;
+  };
+
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      return;
+    }
+    
+    setIsSubmitting(true);
+    setError("");
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Convert string values to numbers where appropriate
+      const processedData = {
+        ...formData,
+        latitude: parseFloat(formData.latitude) || 0,
+        longitude: parseFloat(formData.longitude) || 0,
+        elevation_m: parseFloat(formData.elevation_m) || 0,
+        slope_deg: parseFloat(formData.slope_deg) || 0,
+        distance_to_fault_km: parseFloat(formData.distance_to_fault_km) || 0,
+        rock_hardness: parseFloat(formData.rock_hardness) || 0,
+        fracture_density: parseFloat(formData.fracture_density) || 0,
+        rainfall_mm: parseFloat(formData.rainfall_mm) || 0,
+        temperature_c: parseFloat(formData.temperature_c) || 0,
+        wind_speed_kmh: parseFloat(formData.wind_speed_kmh) || 0,
+        ndvi: parseFloat(formData.ndvi) || 0,
+        rock_size_cm: parseFloat(formData.rock_size_cm) || 0,
+        rock_volume_m3: parseFloat(formData.rock_volume_m3) || 0,
+        rock_velocity_mps: parseFloat(formData.rock_velocity_mps) || 0,
+        prior_events: parseInt(formData.prior_events) || 0,
+      };
+
+      console.log("Submitting data:", processedData);
+
+      // Make API call
+      const response = await fetch("http://localhost:5000/predict", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(processedData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("API Response:", result);
+
+      // Determine alert status based on API response or form data
+      let status;
+      if (result && result.prediction) {
+        // Use API prediction if available
+        status = result.prediction.toUpperCase();
+      } else {
+        // Fallback to local determination
+        status = determineAlertStatus(formData);
+      }
+
+      setAlertSection(status);
+      setShowAlert(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      setError(`Failed to submit data: ${error.message}`);
       
+      // Show fallback analysis even on error
       const status = determineAlertStatus(formData);
       setAlertSection(status);
       setShowAlert(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (error) {
-      console.error("Error submitting form:", error);
+      
     } finally {
       setIsSubmitting(false);
     }
@@ -280,6 +354,16 @@ const Input = () => {
             <AlertComponent alertSection={alertSection} onClose={handleCloseAlert} />
           )}
 
+          {/* Error Display */}
+          {error && (
+            <div className="max-w-4xl mx-auto mb-8 bg-red-600/20 border border-red-500 rounded-xl p-4 backdrop-blur-sm">
+              <div className="flex items-center">
+                <span className="text-red-400 mr-2">⚠️</span>
+                <span className="text-red-300">{error}</span>
+              </div>
+            </div>
+          )}
+
           {/* Header Section */}
           <div className="text-center mb-12">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-orange-500 to-red-500 rounded-full mb-6 animate-bounce">
@@ -293,7 +377,7 @@ const Input = () => {
             </p>
           </div>
 
-          <div onSubmit={handleSubmit}>
+          <div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Geotechnical Data Card */}
               <div className="bg-slate-800/40 backdrop-blur-xl border border-slate-700 rounded-2xl p-8 shadow-2xl hover:shadow-orange-500/10 transition-all duration-500 hover:border-orange-500/30 group">
@@ -315,18 +399,20 @@ const Input = () => {
 
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <InputField label="Latitude" name="latitude" value={formData.latitude} onChange={handleChange} icon="🌍" />
-                    <InputField label="Longitude" name="longitude" value={formData.longitude} onChange={handleChange} icon="🌍" />
+                    <InputField label="Latitude *" name="latitude" value={formData.latitude} onChange={handleChange} icon="🌍" />
+                    <InputField label="Longitude *" name="longitude" value={formData.longitude} onChange={handleChange} icon="🌍" />
                   </div>
                   
-                  <InputField label="Slope (degrees)" name="slope_deg" value={formData.slope_deg} onChange={handleChange} min={5} max={60} icon="📐" />
-                  <InputField label="Distance to Rock (km)" name="distance_to_rock" value={formData.distance_to_rock} onChange={handleChange} min={2.59} max={50} icon="📏" />
-                  <InputField label="Rock Volume (m³)" name="rock_volume" value={formData.rock_volume} onChange={handleChange} min={0.05} max={7.4} icon="🪨" />
+                  <InputField label="Elevation (m) *" name="elevation_m" value={formData.elevation_m} onChange={handleChange} min={500} max={3000} icon="⛰️" />
+                  <InputField label="Slope (degrees) *" name="slope_deg" value={formData.slope_deg} onChange={handleChange} min={0} max={90} icon="📐" />
+                  <InputField label="Distance to Fault (km)" name="distance_to_fault_km" value={formData.distance_to_fault_km} onChange={handleChange} min={2.6} max={50} icon="📏" />
+                  <InputField label="Rock Hardness" name="rock_hardness" value={formData.rock_hardness} onChange={handleChange} min={1} max={10} icon="🪨" />
+                  <InputField label="Fracture Density" name="fracture_density" value={formData.fracture_density} onChange={handleChange} min={1.27} max={5} icon="🔍" />
                   
                   <DropdownField
                     label="Rock Type"
                     name="rock_type"
-                    options={["Shale", "Granite", "Basalt", "Limestone", "Sandstone"]}
+                    options={["Igneous", "Sedimentary", "Metamorphic", "Shale", "Granite", "Basalt", "Limestone", "Sandstone"]}
                     value={formData.rock_type}
                     onChange={handleChange}
                     icon="🗿"
@@ -335,19 +421,10 @@ const Input = () => {
                   <DropdownField
                     label="Soil Type"
                     name="soil_type"
-                    options={["Loamy", "Clay", "Sandy", "Silty", "Rocky"]}
+                    options={["Clay", "Loamy", "Sandy", "Silty", "Rocky"]}
                     value={formData.soil_type}
                     onChange={handleChange}
                     icon="🌱"
-                  />
-
-                  <DropdownField
-                    label="Prior Events"
-                    name="prior_events"
-                    options={[4, 3, 0, 2, 1]}
-                    value={formData.prior_events}
-                    onChange={handleChange}
-                    icon="📊"
                   />
                 </div>
               </div>
@@ -363,18 +440,42 @@ const Input = () => {
 
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <InputField label="Rainfall (mm)" name="rainfall_mm" value={formData.rainfall_mm} onChange={handleChange} icon="🌧️" />
-                    <InputField label="Snow (mm)" name="snow_mm" value={formData.snow_mm} onChange={handleChange} icon="❄️" />
+                    <InputField label="Rainfall (mm)" name="rainfall_mm" value={formData.rainfall_mm} onChange={handleChange} min={0} max={300} icon="🌧️" />
+                    <InputField label="Temperature (°C)" name="temperature_c" value={formData.temperature_c} onChange={handleChange} min={-4} max={45} icon="🌡️" />
                   </div>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <InputField label="Temperature (°C)" name="temperature" value={formData.temperature} onChange={handleChange} icon="🌡️" />
-                    <InputField label="Wind Speed (km/h)" name="wind_speed" value={formData.wind_speed} onChange={handleChange} icon="💨" />
+                    <InputField label="Wind Speed (km/h)" name="wind_speed_kmh" value={formData.wind_speed_kmh} onChange={handleChange} min={0} max={99} icon="💨" />
+                    <InputField label="NDVI" name="ndvi" value={formData.ndvi} onChange={handleChange} min={-1} max={1} icon="🌿" />
                   </div>
                   
-                  <InputField label="Humidity (%)" name="humidity" value={formData.humidity} onChange={handleChange} icon="💧" />
-                  <InputField label="Vegetation Coverage" name="vegetation" value={formData.vegetation} onChange={handleChange} icon="🌳" />
-                  <InputField label="Land Cover Type" name="land_cover" value={formData.land_cover} onChange={handleChange} icon="🗺️" />
+                  
+                  <DropdownField
+                    label="Land Cover"
+                    name="land_cover"
+                    options={["Bare", "Forest", "Grassland", "Urban"]}
+                    value={formData.land_cover}
+                    onChange={handleChange}
+                    icon="🗺️"
+                  />
+
+                  <DropdownField
+                    label="Vegetation"
+                    name="vegetation"
+                    options={["Sparse", "Dense", "Medium"]}
+                    value={formData.vegetation}
+                    onChange={handleChange}
+                    icon="🌳"
+                  />
+
+                  <DropdownField
+                    label="Season"
+                    name="season"
+                    options={["Winter", "Spring", "Summer", "Autumn"]}
+                    value={formData.season}
+                    onChange={handleChange}
+                    icon="🗓️"
+                  />
                 </div>
               </div>
 
@@ -388,8 +489,19 @@ const Input = () => {
                 </div>
 
                 <div className="space-y-6">
-                  <InputField label="Rock Size (m)" name="rock_size" value={formData.rock_size} onChange={handleChange} icon="📏" />
-                  <InputField label="Rock Velocity (m/s)" name="rock_velocity" value={formData.rock_velocity} onChange={handleChange} icon="⚡" />
+                  <InputField label="Rock Size (cm)" name="rock_size_cm" value={formData.rock_size_cm} onChange={handleChange} min={10} max={500} icon="📏" />
+                  <InputField label="Rock Volume (m³)" name="rock_volume_m3" value={formData.rock_volume_m3} onChange={handleChange} min={0.5} max={7.5} icon="🪨" />
+                  <InputField label="Rock Velocity (m/s)" name="rock_velocity_mps" value={formData.rock_velocity_mps} onChange={handleChange} min={1} max={29} icon="⚡" />
+                  
+                  
+                  <DropdownField
+                    label="Prior Events"
+                    name="prior_events"
+                    options={[0, 1, 2, 3, 4]}
+                    value={formData.prior_events}
+                    onChange={handleChange}
+                    icon="📊"
+                  />
                   
                   {/* Analysis Preview */}
                   <div className="mt-8 p-6 bg-slate-900/50 rounded-xl border border-slate-600">
@@ -424,7 +536,7 @@ const Input = () => {
             {/* Submit Button */}
             <div className="flex justify-center mt-12">
               <button
-                type="submit"
+                type="button"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
                 className={`bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-4 px-8 rounded-2xl shadow-2xl 

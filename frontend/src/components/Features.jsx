@@ -25,7 +25,7 @@ const Features = () => {
       description:
         "Visualize vulnerable mine zones with color-coded severity levels powered by AI models.",
       badge: "Live",
-      link: "/results",
+      link: "/dashboard",
     },
     {
       icon: <Activity className="h-8 w-8" />,
@@ -33,9 +33,43 @@ const Features = () => {
       description:
         "Get predictive insights with probability-based forecasts for rockfall risks over time.",
       badge: "AI",
-      link: "/results",
+      link: "/analyze",
+    },
+   
+    
+    {
+      icon: <AlertTriangle className="h-8 w-8" />,
+      title: "Instant Alerts",
+      description:
+        "Receive SMS/email alerts with severity levels and suggested action plans for safety.",
+      badge: "Critical",
+      href: "#risk",
+    },
+   
+    {
+      icon: <FileText className="h-8 w-8" />,
+      title: "Reports & Action Plans",
+      description:
+        "Download risk assessment reports and recommended mitigation strategies instantly.",
+      badge: "PDF",
     },
     {
+      icon: <Settings className="h-8 w-8" />,
+      title: "Custom Integration",
+      description:
+        "Easily integrate with low-cost monitoring hardware and open-source tools for scalability.",
+      badge: "Flexible",
+      link: "/analyze",
+    },
+     {
+      icon: <CloudRain className="h-8 w-8" />,
+      title: "Environmental Tracking",
+      description:
+        "Monitor rainfall, temperature, and vibrations to factor environmental risks into predictions.",
+      badge: "Live Data",
+      comingSoon: true,
+    },
+     {
       icon: <Database className="h-8 w-8" />,
       title: "Sensor Data Monitoring",
       description:
@@ -51,43 +85,14 @@ const Features = () => {
       badge: "3D",
       comingSoon: true,
     },
-    {
-      icon: <AlertTriangle className="h-8 w-8" />,
-      title: "Instant Alerts",
-      description:
-        "Receive SMS/email alerts with severity levels and suggested action plans for safety.",
-      badge: "Critical",
-      href: "#risk",
-    },
-    {
-      icon: <CloudRain className="h-8 w-8" />,
-      title: "Environmental Tracking",
-      description:
-        "Monitor rainfall, temperature, and vibrations to factor environmental risks into predictions.",
-      badge: "Live Data",
-      comingSoon: true,
-    },
-    {
-      icon: <FileText className="h-8 w-8" />,
-      title: "Reports & Action Plans",
-      description:
-        "Download risk assessment reports and recommended mitigation strategies instantly.",
-      badge: "PDF",
-    },
-    {
-      icon: <Settings className="h-8 w-8" />,
-      title: "Custom Integration",
-      description:
-        "Easily integrate with low-cost monitoring hardware and open-source tools for scalability.",
-      badge: "Flexible",
-      link: "/analyse",
-    },
   ];
 
   const handleClick = (feature) => {
+    console.log("hello");
     if (feature.comingSoon) return; // do nothing
     if (feature.link) {
-      window.location.href = feature.link; // navigate to a page
+      window.location.href = feature.link;
+      console.log(feature.link) // navigate to a page
     } else if (feature.href) {
       const target = document.querySelector(feature.href);
       if (target) target.scrollIntoView({ behavior: "smooth" }); // smooth scroll
@@ -124,7 +129,7 @@ const Features = () => {
                 </div>
               )}
 
-              <CardHeader className={feature.comingSoon ? "pointer-events-none" : ""}>
+              <CardHeader  className={feature.comingSoon ? "pointer-events-none" : ""}>
                 <div className="flex items-start justify-between">
                   <div
                     className={`p-3 rounded-lg transition-colors ${
@@ -143,7 +148,7 @@ const Features = () => {
                       {feature.icon}
                     </span>
                   </div>
-                  <Badge className="bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors">
+                  <Badge  className="bg-gray-700  text-gray-300 hover:bg-gray-600 transition-colors">
                     {feature.badge}
                   </Badge>
                 </div>

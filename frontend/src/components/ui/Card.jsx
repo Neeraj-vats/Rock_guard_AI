@@ -1,9 +1,10 @@
 import React from "react";
 import clsx from "clsx";
 
-const Card = ({ className, children }) => {
+const Card = ({ className, children ,onClick }) => {
   return (
-    <div
+    <div 
+     onClick={onClick}
       className={clsx(
         // lighter than section background
         "rounded-xl border border-gray-600 bg-gray-700 text-white shadow-md transition hover:shadow-lg cursor-pointer",

@@ -9,7 +9,7 @@ export const Navbar = () => {
         {/* Logo with Gradient */}
         <Link to="/">
           <h1 className="text-3xl font-extrabold tracking-tight">
-            <span className="bg-gradient-to-r from-orange-300 to-yellow-200 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-orange-300 to-yellow-200 bg-clip-text text-transparent flex justify-start -translate-x-22">
               Rockfall Predictor
             </span>
           </h1>

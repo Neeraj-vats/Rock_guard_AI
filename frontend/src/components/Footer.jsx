@@ -8,7 +8,7 @@ export const Footer = () => {
         <div>
           <h1 className="text-2xl font-bold mb-2">RockFall Predictor</h1>
           <p className="text-gray-400 max-w-xs">
-            Leveraging AI & IoT to predict rockfall hazards and ensure safer terrains.
+            Leveraging AI  to predict rockfall hazards and ensure safer terrains.
           </p>
         </div>
 

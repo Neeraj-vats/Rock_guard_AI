@@ -4,5 +4,5 @@ numpy
 pandas
 joblib
 dill
-sklearn==1.6.2
+scikit-learn==1.6.1
 requests

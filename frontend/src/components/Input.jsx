@@ -70,23 +70,58 @@ const determineAlertStatus = (formData) => {
   return "SAFE";
 };
 
-// Fast, memoized input component
-const InputField = memo(({ label, name, type = "text", value, onChange }) => (
+// Fast, memoized input component (with restrictions + error)
+const InputField = memo(({ label, name, type = "text", value, onChange, min, max }) => {
+  const isInvalid = (min !== undefined && value && parseFloat(value) < min) ||
+                    (max !== undefined && value && parseFloat(value) > max);
+
+  return (
+    <div>
+      <label className="block text-gray-300 font-medium mb-1">{label}</label>
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        className={`w-full p-2 border rounded-lg text-gray-100
+          ${isInvalid ? "border-red-500 focus:border-red-500 focus:ring-red-500" 
+                      : "border-slate-600 bg-slate-700/50 focus:ring-orange-400 focus:border-orange-400"}
+          focus:outline-none hover:border-slate-500 transition-all duration-200`}
+      />
+      {isInvalid && (
+        <p className="text-red-400 text-xs mt-1">
+          Value must be between {min} and {max}
+        </p>
+      )}
+    </div>
+  );
+});
+InputField.displayName = "InputField";
+
+// Dropdown field component (with better contrast styling)
+const DropdownField = memo(({ label, name, options, value, onChange }) => (
   <div>
     <label className="block text-gray-300 font-medium mb-1">{label}</label>
-    <input
-      type={type}
+    <select
       name={name}
       value={value}
       onChange={onChange}
-      className="w-full p-2 border border-slate-600 bg-slate-700/50 text-gray-100 rounded-lg 
+      className="w-full p-2 border border-slate-500 bg-slate-600/80 text-white rounded-lg 
                focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 
-               hover:border-slate-500 transition-all duration-200
-               [&::-webkit-calendar-picker-indicator]:invert"
-    />
+               hover:border-slate-400 transition-all duration-200 cursor-pointer"
+    >
+      <option value="" className="bg-slate-700 text-gray-300">
+        Select {label}
+      </option>
+      {options.map((opt, idx) => (
+        <option key={idx} value={opt} className="bg-slate-700 text-gray-100">
+          {opt}
+        </option>
+      ))}
+    </select>
   </div>
 ));
-InputField.displayName = "InputField";
+DropdownField.displayName = "DropdownField";
 
 // Main Form Component
 const Input = () => {
@@ -99,6 +134,7 @@ const Input = () => {
     soil_type: "",
     rock_size: "",
     rock_volume: "",
+    prior_events: "",
   });
 
   const [alertSection, setAlertSection] = useState("");
@@ -111,16 +147,13 @@ const Input = () => {
       ...prev,
       [name]: value,
     }));
-    
   };
 
   // Submit handler with axios
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/api/data", formData
-        
-      );
+      const res = await axios.post("http://localhost:5000/api/data", formData);
 
       console.log("Server response:", res.data);
 
@@ -160,10 +193,38 @@ const Input = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <InputField label="Latitude" name="latitude" value={formData.latitude} onChange={handleChange} />
                   <InputField label="Longitude" name="longitude" value={formData.longitude} onChange={handleChange} />
-                  <InputField label="Slope (deg)" name="slope_deg" value={formData.slope_deg} onChange={handleChange} />
-                  <InputField label="Distance to Rock" name="distance_to_rock" value={formData.distance_to_rock} onChange={handleChange} />
-                  <InputField label="Rock Type" name="rock_type" value={formData.rock_type} onChange={handleChange} />
-                  <InputField label="Soil Type" name="soil_type" value={formData.soil_type} onChange={handleChange} />
+
+                  {/* Restricted Inputs */}
+                  <InputField label="Slope (deg)" name="slope_deg" value={formData.slope_deg} onChange={handleChange} min={5} max={60} />
+                  <InputField label="Distance to Rock (km)" name="distance_to_rock" value={formData.distance_to_rock} onChange={handleChange} min={2.59} max={50} />
+                  <InputField label="Rock Volume (m³)" name="rock_volume" value={formData.rock_volume} onChange={handleChange} min={0.05} max={7.4} />
+
+                  {/* Rock Type Dropdown */}
+                  <DropdownField
+                    label="Rock Type"
+                    name="rock_type"
+                    options={["Shale", "Granite", "Basalt", "Limestone", "Sandstone"]}
+                    value={formData.rock_type}
+                    onChange={handleChange}
+                  />
+
+                  {/* Soil Type Dropdown */}
+                  <DropdownField
+                    label="Soil Type"
+                    name="soil_type"
+                    options={["Loamy", "Clay", "Sandy", "Silty", "Rocky"]}
+                    value={formData.soil_type}
+                    onChange={handleChange}
+                  />
+
+                  {/* Prior Events Dropdown */}
+                  <DropdownField
+                    label="Prior Events"
+                    name="prior_events"
+                    options={[4, 3, 0, 2, 1]}
+                    value={formData.prior_events}
+                    onChange={handleChange}
+                  />
                 </div>
               </div>
 
@@ -189,7 +250,6 @@ const Input = () => {
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <InputField label="Rock Size" name="rock_size" value={formData.rock_size} onChange={handleChange} />
-                    <InputField label="Rock Volume" name="rock_volume" value={formData.rock_volume} onChange={handleChange} />
                     <InputField label="Rock Velocity" name="rock_velocity" value={formData.rock_velocity} onChange={handleChange} />
                   </div>
                 </div>

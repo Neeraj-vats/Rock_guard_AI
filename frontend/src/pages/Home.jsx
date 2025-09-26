@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import Hero from '../components/Hero';
 import Features from '../components/Features';
 import RiskZones from '../components/RiskZones';
+import ModelAccuracy from '../components/Accuracy';
 
 const Home = () => {
     const goToInput = () => {
@@ -15,6 +16,7 @@ const Home = () => {
       <Navbar />
       <Hero />
       <Features /> 
+      <ModelAccuracy/>
       <RiskZones />
       <Footer />
     </div>

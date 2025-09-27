@@ -5,24 +5,6 @@ import { ResponsiveBar } from '@nivo/bar';
 // This is a single, self-contained React component file.
 // All components, hooks, logic, and styling are contained within this file.
 
-// Mock data for the line chart (inspired by the provided image)
-const initialLineData = [
-  {
-    id: 'Training Loss',
-    data: Array.from({ length: 100 }, (_, i) => ({
-      x: i,
-      y: 0.028 - (i * 0.00006) + Math.sin(i / 10) * 0.0001
-    })),
-  },
-  {
-    id: 'Validation Loss',
-    data: Array.from({ length: 100 }, (_, i) => ({
-      x: i,
-      y: 0.024 + Math.sin(i / 5) * 0.0005 + Math.cos(i / 10) * 0.0002
-    })),
-  },
-];
-
 // Mock data for the table and bar chart (inspired by the provided image)
 const initialTableData = [
   { "id": 0, "slope_deg": 13.637969, "distance_to_fault_km": 14.955506, "Rock_Type": "Shale", "Soil_Type": "Loamy", "Rock_Volume_m3": 3.151006, "Season": "Winter", "Prior_Events": 4, "Impact_Level": "Medium" },
@@ -32,7 +14,9 @@ const initialTableData = [
   { "id": 4, "slope_deg": 53.649371, "distance_to_fault_km": 34.768800, "Rock_Type": "Limestone", "Soil_Type": "Rocky", "Rock_Volume_m3": 0.598641, "Season": "Winter", "Prior_Events": 0, "Impact_Level": "Low" },
 ];
 
-const impactLevels = ["Low", "Medium", "High"];
+// Options for the axes dropdowns, derived from numerical data keys
+const axisOptions = ["slope_deg", "distance_to_fault_km", "Rock_Volume_m3", "Prior_Events"];
+
 
 // Function to process data for the bar chart based on the selected column
 const processDataForBarChart = (data, categoryKey) => {
@@ -49,13 +33,13 @@ const processDataForBarChart = (data, categoryKey) => {
 
 // Main App component
 const Result = () => {
-  const [lineData, setLineData] = useState(initialLineData);
+  const [lineData, setLineData] = useState([]);
   const [tableData, setTableData] = useState(initialTableData);
   const [activeTab, setActiveTab] = useState('graph');
   const [lineChartOptions, setLineChartOptions] = useState({
-    title: 'Learning Curve: Loss (MSE)',
-    xLabel: 'Epoch',
-    yLabel: 'Loss'
+    title: 'Rockfall Analysis: Rock Volume m3 vs slope deg',
+    xLabel: 'slope_deg', // Default X-axis
+    yLabel: 'Rock_Volume_m3' // Default Y-axis
   });
   const [barChartOptions, setBarChartOptions] = useState({
     title: 'Rock Type Distribution',
@@ -65,6 +49,32 @@ const Result = () => {
   const [tableFilter, setTableFilter] = useState('');
   const [geminiSummary, setGeminiSummary] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [userQuery, setUserQuery] = useState('What do these graphs tell me about potential rockfall risks?');
+
+
+  // --- EFFECT TO UPDATE LINE CHART DATA WHEN OPTIONS CHANGE ---
+  React.useEffect(() => {
+    if (tableData.length > 0 && lineChartOptions.xLabel && lineChartOptions.yLabel) {
+        const sortedData = [...tableData].sort((a, b) => a[lineChartOptions.xLabel] - b[lineChartOptions.xLabel]);
+        const chartData = [{
+            id: `${lineChartOptions.yLabel} vs ${lineChartOptions.xLabel}`,
+            data: sortedData.map(d => ({
+                x: d[lineChartOptions.xLabel],
+                y: d[lineChartOptions.yLabel]
+            }))
+        }];
+        setLineData(chartData);
+    }
+  }, [tableData, lineChartOptions.xLabel, lineChartOptions.yLabel]);
+
+  // --- EFFECT TO DYNAMICALLY UPDATE THE CHART TITLE ---
+  React.useEffect(() => {
+    if (lineChartOptions.xLabel && lineChartOptions.yLabel) {
+      const newTitle = `Rockfall Analysis: ${lineChartOptions.yLabel.replace(/_/g, ' ')} vs ${lineChartOptions.xLabel.replace(/_/g, ' ')}`;
+      setLineChartOptions(prev => ({ ...prev, title: newTitle }));
+    }
+  }, [lineChartOptions.xLabel, lineChartOptions.yLabel]);
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -85,19 +95,25 @@ const Result = () => {
 
   const barChartData = processDataForBarChart(filteredTableData, barChartOptions.categoryKey);
 
-  // Gemini API Integration
-  const generateDataSummary = async () => {
+  const generateChartAnalysis = async () => {
     setIsLoading(true);
     setGeminiSummary('');
 
-    // Prepare the prompt for the LLM
-    const systemPrompt = "You are a data analyst. Your task is to provide a concise, single-paragraph summary of a given dataset. Focus on key trends, anomalies, and relationships between variables. Your tone should be informative and professional.";
-    const userQuery = `Summarize the following data table in a single paragraph:\n\n${JSON.stringify(initialTableData, null, 2)}`;
+    const systemPrompt = "You are an expert geological data analyst. Your task is to interpret data visualizations for a user. Given the context of a line chart and a bar chart, and a user's question, provide a detailed explanation. First, explain the insights in simple, layman's terms. Then, provide a more detailed explanation in technical terms for an expert audience. Use markdown for formatting.";
     
-    // API Call to Gemini
+    const promptForAI = `
+      Here is the current context of my data dashboard for rockfall prediction in mines:
+      1.  **Line Chart Analysis:**
+          * I am visualizing the relationship between **'${lineChartOptions.xLabel.replace(/_/g, ' ')}'** (on the X-axis) and **'${lineChartOptions.yLabel.replace(/_/g, ' ')}'** (on the Y-axis).
+      2.  **Bar Chart Analysis:**
+          * I am displaying a count distribution for the category: **'${barChartOptions.categoryKey.replace(/_/g, ' ')}'**.
+          * The counts for each item in this category are: ${JSON.stringify(barChartData)}.
+      Based on this dashboard context, please provide a two-part analysis for my question:
+      **My Question: "${userQuery}"**
+    `;
+    
     const payload = {
-      contents: [{ parts: [{ text: userQuery }] }],
-      tools: [{ "google_search": {} }],
+      contents: [{ parts: [{ text: promptForAI }] }],
       systemInstruction: {
         parts: [{ text: systemPrompt }]
       },
@@ -114,22 +130,22 @@ const Result = () => {
       });
 
       const result = await response.json();
-      const text = result?.candidates?.[0]?.content?.parts?.[0]?.text || "Could not generate summary. Please try again.";
+      const text = result?.candidates?.[0]?.content?.parts?.[0]?.text || "Could not generate analysis. Please try again.";
       setGeminiSummary(text);
 
     } catch (error) {
       console.error('Error fetching data from Gemini API:', error);
-      setGeminiSummary("Failed to generate summary. Please check your network connection or try again later.");
+      setGeminiSummary("Failed to generate analysis. Please check your network connection or try again later.");
     } finally {
       setIsLoading(false);
     }
   };
-
+  
   return (
-    <div className="flex flex-col md:flex-row h-[80rem] font-sans bg-gray-900 text-gray-100 p-4 items-start">
+    <div className="flex flex-col md:flex-row h-screen font-sans bg-gray-900 text-gray-100 p-14 items-start overflow-auto ">
       
       {/* Sidebar for user inputs */}
-      <div className="md:w-1/4 w-full mt-[6rem] bg-gray-8   00 p-6 rounded-2xl shadow-xl space-y-6 md:mr-4 mb-4 md:mb-0">
+      <div className="md:w-1/4 w-full bg-gray-800 p-6 rounded-2xl shadow-xl space-y-6 md:mr-4 mb-4 md:mb-0 md:sticky top-4">
         <h2 className="text-xl font-bold text-blue-400">Dashboard Controls</h2>
 
         {/* Line Chart Inputs */}
@@ -147,26 +163,32 @@ const Result = () => {
             />
           </div>
           <div>
-            <label htmlFor="line-xlabel" className="block text-sm font-medium text-gray-400 mb-1">X-Axis Label</label>
-            <input
+            <label htmlFor="line-xlabel" className="block text-sm font-medium text-gray-400 mb-1">X-Axis</label>
+            <select
               id="line-xlabel"
-              type="text"
               name="lineChart.xLabel"
               value={lineChartOptions.xLabel}
               onChange={handleInputChange}
               className="w-full p-2 rounded-lg bg-gray-700 text-gray-100 border border-gray-600 focus:outline-none focus:border-blue-500 transition-colors"
-            />
+            >
+              {axisOptions.map(key => (
+                <option key={key} value={key}>{key.replace(/_/g, ' ')}</option>
+              ))}
+            </select>
           </div>
           <div>
-            <label htmlFor="line-ylabel" className="block text-sm font-medium text-gray-400 mb-1">Y-Axis Label</label>
-            <input
+            <label htmlFor="line-ylabel" className="block text-sm font-medium text-gray-400 mb-1">Y-Axis</label>
+            <select
               id="line-ylabel"
-              type="text"
               name="lineChart.yLabel"
               value={lineChartOptions.yLabel}
               onChange={handleInputChange}
               className="w-full p-2 rounded-lg bg-gray-700 text-gray-100 border border-gray-600 focus:outline-none focus:border-blue-500 transition-colors"
-            />
+            >
+               {axisOptions.map(key => (
+                <option key={key} value={key}>{key.replace(/_/g, ' ')}</option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -214,23 +236,28 @@ const Result = () => {
         {/* Gemini API Section */}
         <div className="space-y-4 pt-6">
           <h3 className="text-lg font-semibold text-gray-200 border-b border-gray-700 pb-2">Data Insights ✨</h3>
+          <div>
+            <label htmlFor="user-query" className="block text-sm font-medium text-gray-400 mb-1">Your Question</label>
+            <textarea
+              id="user-query"
+              value={userQuery}
+              onChange={(e) => setUserQuery(e.target.value)}
+              className="w-full p-2 h-24 rounded-lg bg-gray-700 text-gray-100 border border-gray-600 focus:outline-none focus:border-blue-500 transition-colors"
+              placeholder="Ask about the charts..."
+            />
+          </div>
           <button
-            onClick={generateDataSummary}
+            onClick={generateChartAnalysis}
             className="w-full p-3 rounded-lg bg-purple-600 hover:bg-purple-700 transition-colors font-bold disabled:bg-gray-500 disabled:cursor-not-allowed"
             disabled={isLoading}
           >
-            {isLoading ? 'Generating...' : 'Generate Data Summary ✨'}
+            {isLoading ? 'Generating...' : 'Generate Chart Analysis ✨'}
           </button>
-          {geminiSummary && (
-            <div className="bg-gray-700 p-4 rounded-lg text-sm text-gray-300 shadow-inner">
-              <p>{geminiSummary}</p>
-            </div>
-          )}
         </div>
       </div>
 
       {/* Main content area for charts and table */}
-      <div className="flex-1 translate-y-[7rem] bg-gray-800 p-6 rounded-2xl shadow-xl space-y-6">
+      <div className="flex-1 bg-gray-800 p-6 rounded-2xl shadow-xl space-y-6">
         {/* Tabs for switching between Graph and Table view */}
         <div className="flex justify-center mb-4 border-b-2 border-gray-700">
           <button
@@ -261,7 +288,7 @@ const Result = () => {
               <ResponsiveLine
                 data={lineData}
                 margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
-                xScale={{ type: 'point' }}
+                xScale={{ type: 'linear', min: 'auto', max: 'auto' }}
                 yScale={{
                   type: 'linear',
                   min: 'auto',
@@ -276,20 +303,22 @@ const Result = () => {
                   tickSize: 5,
                   tickPadding: 5,
                   tickRotation: 0,
-                  legend: lineChartOptions.xLabel,
+                  legend: lineChartOptions.xLabel.replace(/_/g, ' '),
                   legendOffset: 36,
-                  legendPosition: 'middle'
+                  legendPosition: 'middle',
+                  format: ".2f"
                 }}
                 axisLeft={{
                   orient: 'left',
                   tickSize: 5,
                   tickPadding: 5,
                   tickRotation: 0,
-                  legend: lineChartOptions.yLabel,
-                  legendOffset: -40,
-                  legendPosition: 'middle'
+                  legend: lineChartOptions.yLabel.replace(/_/g, ' '),
+                  legendOffset: -50,
+                  legendPosition: 'middle',
+                  format: ".2f"
                 }}
-                pointSize={10}
+                pointSize={8}
                 pointColor={{ theme: 'background' }}
                 pointBorderWidth={2}
                 pointBorderColor={{ from: 'serieColor' }}
@@ -415,7 +444,7 @@ const Result = () => {
                     <tr key={row.id} className="hover:bg-gray-700 transition-colors">
                       {Object.values(row).map((value, index) => (
                         <td key={index} className="px-6 py-4 whitespace-nowrap text-sm text-gray-300 text-left">
-                          {value}
+                          {String(value)}
                         </td>
                       ))}
                     </tr>
@@ -425,9 +454,22 @@ const Result = () => {
             </div>
           </div>
         )}
+        
+        {/* --- MOVED: Gemini Summary Display --- */}
+        {geminiSummary && (
+          <div className="space-y-4 pt-6">
+              <h3 className="text-lg font-semibold text-gray-200 border-b border-gray-700 pb-2">Generated Analysis ✨</h3>
+              <div className="bg-gray-900 p-6 rounded-lg text-sm text-gray-300 shadow-inner">
+                  <p style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
+                      {geminiSummary}
+                  </p>
+              </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
 export default Result;
+

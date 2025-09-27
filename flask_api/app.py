@@ -2,9 +2,11 @@ from flask import Flask, request, jsonify
 import tensorflow as tf
 import joblib
 import pandas as pd
+from flask_cors import CORS
 
 # Initialize Flask app
 app = Flask(__name__)
+CORS(app)
 
 # Load preprocessor and model
 preprocessor = joblib.load("preprocessor.pkl")
@@ -32,9 +34,11 @@ def predict():
     try:
         # Get JSON input
         data = request.get_json()
+        
 
         # Convert to DataFrame with correct columns
         input_df = pd.DataFrame([data], columns=all_features)
+        print(input_df)
 
         # Cast types
         for col in numerical_features:
@@ -44,10 +48,11 @@ def predict():
 
         # Preprocess input
         processed_input = preprocessor.transform(input_df)
-
+        print("hello",processed_input)
         # Predict
         prediction = model.predict(processed_input)
         result = float(prediction[0][0])
+        print(f"Predicted Susceptibility Score: {result}")
 
         return jsonify({"Susceptibility_Score": result})
 

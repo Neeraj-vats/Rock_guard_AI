@@ -1,7 +1,7 @@
 import React, { useState, useCallback, memo } from "react";
 
 // Alert popup for SAFE, WARNING, DANGER with enhanced styling
-const AlertComponent = memo(({ alertSection, onClose }) => {
+const AlertComponent = memo(({ alertSection, onClose, apiData }) => {
   if (!alertSection) return null;
 
   const alertConfig = {
@@ -50,6 +50,16 @@ const AlertComponent = memo(({ alertSection, onClose }) => {
             <div>
               <h3 className="font-bold text-xl tracking-wide">{config.title}</h3>
               <p className="text-sm opacity-90 mt-1">{config.message}</p>
+              {apiData && (
+                <div className="mt-2 text-xs opacity-80">
+                  {apiData.susceptibility_score && (
+                    <span>Score: {(apiData.susceptibility_score * 100).toFixed(1)}%</span>
+                  )}
+                  {apiData.confidence && (
+                    <span className="ml-3">Confidence: {(apiData.confidence * 100).toFixed(1)}%</span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
           <button
@@ -67,11 +77,10 @@ AlertComponent.displayName = "AlertComponent";
 
 // Utility: Decide alert based on form values
 const determineAlertStatus = (formData) => {
-  const { hazard_level, slope_deg } = formData;
-  const slope = parseFloat(slope_deg) || 0;
+  const slope = parseFloat(formData.Slope_deg) || 0;
 
-  if (hazard_level?.toLowerCase() === "high" || slope > 35) return "DANGER";
-  if (hazard_level?.toLowerCase() === "medium" || slope > 30) return "WARNING";
+  if (slope > 35) return "DANGER";
+  if (slope > 30) return "WARNING";
 
   return "SAFE";
 };
@@ -193,32 +202,33 @@ DropdownField.displayName = "DropdownField";
 // Main Form Component with enhanced styling
 const Input = () => {
   const [formData, setFormData] = useState({
-    latitude: "",
-    longitude: "",
-    elevation_m: "",
-    slope_deg: "",
-    distance_to_fault_km: "",
-    rock_hardness: "",
-    fracture_density: "",
-    rainfall_mm: "",
-    temperature_c: "",
-    wind_speed_kmh: "",
-    ndvi: "",
-    rock_size_cm: "",
-    rock_volume_m3: "",
-    rock_velocity_mps: "",
-    prior_events: "",
-    land_cover: "",
-    vegetation: "",
-    rock_type: "",
-    soil_type: "",
-    season: "",
+    Latitude: "",
+    Longitude: "",
+    Elevation_m: "",
+    Slope_deg: "",
+    Distance_to_fault_km: "",
+    Rock_Hardness: "",        // Changed to match Flask backend
+    Fracture_Density: "",     // Changed to match Flask backend
+    Rainfall_mm: "",
+    Temperature_C: "",        // Changed to match Flask backend
+    Wind_speed_kmh: "",
+    NDVI: "",
+    Rock_Size_cm: "",
+    Rock_Volume_m3: "",
+    Rock_Velocity_mps: "",
+    Prior_Events: "",
+    Land_Cover: "",
+    Vegetation: "",
+    Rock_Type: "",
+    Soil_Type: "",
+    Season: "",
   });
 
   const [alertSection, setAlertSection] = useState("");
   const [showAlert, setShowAlert] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [apiData, setApiData] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -234,8 +244,8 @@ const Input = () => {
         (position) => {
           setFormData((prev) => ({
             ...prev,
-            latitude: position.coords.latitude.toFixed(5),
-            longitude: position.coords.longitude.toFixed(5),
+            Latitude: position.coords.latitude.toFixed(5),
+            Longitude: position.coords.longitude.toFixed(5),
           }));
         },
         (error) => {
@@ -249,7 +259,7 @@ const Input = () => {
   };
 
   const validateForm = () => {
-    const requiredFields = ['latitude', 'longitude', 'elevation_m', 'slope_deg'];
+    const requiredFields = ['Latitude', 'Longitude', 'Elevation_m', 'Slope_deg'];
     const missingFields = requiredFields.filter(field => !formData[field]);
     
     if (missingFields.length > 0) {
@@ -261,70 +271,118 @@ const Input = () => {
     return true;
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async (e) => {
+    // Prevent default form submission if event exists
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    console.log("Submit handler called!");
+    console.log("Current formData:", formData);
+
     if (!validateForm()) {
+      console.log("Validation failed");
       return;
     }
     
     setIsSubmitting(true);
     setError("");
+    setApiData(null);
 
     try {
-      // Convert string values to numbers where appropriate
+      // Create API payload with EXACT field names matching Flask backend
       const processedData = {
-        ...formData,
-        latitude: parseFloat(formData.latitude) || 0,
-        longitude: parseFloat(formData.longitude) || 0,
-        elevation_m: parseFloat(formData.elevation_m) || 0,
-        slope_deg: parseFloat(formData.slope_deg) || 0,
-        distance_to_fault_km: parseFloat(formData.distance_to_fault_km) || 0,
-        rock_hardness: parseFloat(formData.rock_hardness) || 0,
-        fracture_density: parseFloat(formData.fracture_density) || 0,
-        rainfall_mm: parseFloat(formData.rainfall_mm) || 0,
-        temperature_c: parseFloat(formData.temperature_c) || 0,
-        wind_speed_kmh: parseFloat(formData.wind_speed_kmh) || 0,
-        ndvi: parseFloat(formData.ndvi) || 0,
-        rock_size_cm: parseFloat(formData.rock_size_cm) || 0,
-        rock_volume_m3: parseFloat(formData.rock_volume_m3) || 0,
-        rock_velocity_mps: parseFloat(formData.rock_velocity_mps) || 0,
-        prior_events: parseInt(formData.prior_events) || 0,
+        // Numerical features - EXACTLY as Flask backend expects
+        Latitude: parseFloat(formData.Latitude) || 0,
+        Longitude: parseFloat(formData.Longitude) || 0,
+        Elevation_m: parseFloat(formData.Elevation_m) || 0,
+        Slope_deg: parseFloat(formData.Slope_deg) || 0,
+        Distance_to_fault_km: parseFloat(formData.Distance_to_fault_km) || 0,
+        Rock_Hardness: parseFloat(formData.Rock_Hardness) || 0,
+        Fracture_Density: parseFloat(formData.Fracture_Density) || 0,
+        Rainfall_mm: parseFloat(formData.Rainfall_mm) || 0,
+        Temperature_C: parseFloat(formData.Temperature_C) || 0,
+        Wind_speed_kmh: parseFloat(formData.Wind_speed_kmh) || 0,
+        NDVI: parseFloat(formData.NDVI) || 0,
+        Rock_Size_cm: parseFloat(formData.Rock_Size_cm) || 0,
+        Rock_Volume_m3: parseFloat(formData.Rock_Volume_m3) || 0,
+        Rock_Velocity_mps: parseFloat(formData.Rock_Velocity_mps) || 0,
+        Prior_Events: parseInt(formData.Prior_Events) || 0,
+        
+        // Categorical features - EXACTLY as Flask backend expects
+        Rock_Type: formData.Rock_Type || "",
+        Soil_Type: formData.Soil_Type || "",
+        Vegetation: formData.Vegetation || "",
+        Land_Cover: formData.Land_Cover || "",
+        Season: formData.Season || "",
       };
 
-      console.log("Submitting data:", processedData);
+      console.log("=== DATA BEING SENT TO FLASK ===");
+      console.log("Processed data:", processedData);
+      console.log("Field names:", Object.keys(processedData));
+      console.log("=====================================");
 
-      // Make API call
-      const response = await fetch("http://localhost:5000/predict", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(processedData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log("API Response:", result);
-
-      // Determine alert status based on API response or form data
-      let status;
-      if (result && result.prediction) {
-        // Use API prediction if available
-        status = result.prediction.toUpperCase();
-      } else {
-        // Fallback to local determination
-        status = determineAlertStatus(formData);
-      }
-
+      // Show immediate feedback
+      const status = determineAlertStatus(formData);
       setAlertSection(status);
       setShowAlert(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
 
+      // Try API call
+      try {
+        const response = await fetch("http://localhost:5000/predict", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(processedData),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log("=== API RESPONSE ===");
+          console.log("Full API Response:", result);
+          console.log("==================");
+
+          setApiData(result);
+
+          // Update with API result if available - handle different response formats
+          if (result) {
+            let apiStatus = "SAFE"; // default
+            
+            // Check for different possible response formats
+            if (result.prediction) {
+              apiStatus = result.prediction.toUpperCase();
+            } else if (result.susceptibility_score !== undefined) {
+              // Convert score to status
+              const score = parseFloat(result.susceptibility_score);
+              if (score > 0.67) apiStatus = "DANGER";
+              else if (score > 0.33) apiStatus = "WARNING";
+              else apiStatus = "SAFE";
+            } else if (result.Susceptibility_Score !== undefined) {
+              // Handle capitalized version
+              const score = parseFloat(result.Susceptibility_Score);
+              if (score > 0.67) apiStatus = "DANGER";
+              else if (score > 0.33) apiStatus = "WARNING";
+              else apiStatus = "SAFE";
+            }
+            
+            console.log("Setting alert status to:", apiStatus);
+            setAlertSection(apiStatus);
+          }
+        } else {
+          const errorText = await response.text();
+          console.log("API call failed:", response.status, errorText);
+          console.log("Using fallback analysis");
+        }
+      } catch (apiError) {
+        console.log("API error:", apiError.message, "- using fallback analysis");
+      }
+
     } catch (error) {
-      console.error("Error submitting form:", error);
-      setError(`Failed to submit data: ${error.message}`);
+      console.error("Error in submit handler:", error);
+      setError(`Failed to process data: ${error.message}`);
       
       // Show fallback analysis even on error
       const status = determineAlertStatus(formData);
@@ -335,9 +393,12 @@ const Input = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [formData]);
 
-  const handleCloseAlert = () => setShowAlert(false);
+  const handleCloseAlert = () => {
+    setShowAlert(false);
+    setApiData(null);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
@@ -351,7 +412,7 @@ const Input = () => {
       <div className="relative z-10 p-6 pt-20">
         <div className="max-w-7xl mx-auto">
           {showAlert && (
-            <AlertComponent alertSection={alertSection} onClose={handleCloseAlert} />
+            <AlertComponent alertSection={alertSection} onClose={handleCloseAlert} apiData={apiData} />
           )}
 
           {/* Error Display */}
@@ -399,30 +460,30 @@ const Input = () => {
 
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <InputField label="Latitude *" name="latitude" value={formData.latitude} onChange={handleChange} icon="🌍" />
-                    <InputField label="Longitude *" name="longitude" value={formData.longitude} onChange={handleChange} icon="🌍" />
+                    <InputField label="Latitude *" name="Latitude" value={formData.Latitude} onChange={handleChange} icon="🌍" />
+                    <InputField label="Longitude *" name="Longitude" value={formData.Longitude} onChange={handleChange} icon="🌍" />
                   </div>
                   
-                  <InputField label="Elevation (m) *" name="elevation_m" value={formData.elevation_m} onChange={handleChange} min={500} max={3000} icon="⛰️" />
-                  <InputField label="Slope (degrees) *" name="slope_deg" value={formData.slope_deg} onChange={handleChange} min={0} max={90} icon="📐" />
-                  <InputField label="Distance to Fault (km)" name="distance_to_fault_km" value={formData.distance_to_fault_km} onChange={handleChange} min={2.6} max={50} icon="📏" />
-                  <InputField label="Rock Hardness" name="rock_hardness" value={formData.rock_hardness} onChange={handleChange} min={1} max={10} icon="🪨" />
-                  <InputField label="Fracture Density" name="fracture_density" value={formData.fracture_density} onChange={handleChange} min={1.27} max={5} icon="🔍" />
+                  <InputField label="Elevation (m) *" name="Elevation_m" value={formData.Elevation_m} onChange={handleChange} min={500} max={3000} icon="⛰️" />
+                  <InputField label="Slope (degrees) *" name="Slope_deg" value={formData.Slope_deg} onChange={handleChange} min={0} max={90} icon="📐" />
+                  <InputField label="Distance to Fault (km)" name="Distance_to_fault_km" value={formData.Distance_to_fault_km} onChange={handleChange} min={2.6} max={50} icon="📏" />
+                  <InputField label="Rock Hardness" name="Rock_Hardness" value={formData.Rock_Hardness} onChange={handleChange} min={1} max={10} icon="🪨" />
+                  <InputField label="Fracture Density" name="Fracture_Density" value={formData.Fracture_Density} onChange={handleChange} min={1.27} max={5} icon="🔍" />
                   
                   <DropdownField
                     label="Rock Type"
-                    name="rock_type"
+                    name="Rock_Type"
                     options={["Igneous", "Sedimentary", "Metamorphic", "Shale", "Granite", "Basalt", "Limestone", "Sandstone"]}
-                    value={formData.rock_type}
+                    value={formData.Rock_Type}
                     onChange={handleChange}
                     icon="🗿"
                   />
 
                   <DropdownField
                     label="Soil Type"
-                    name="soil_type"
+                    name="Soil_Type"
                     options={["Clay", "Loamy", "Sandy", "Silty", "Rocky"]}
-                    value={formData.soil_type}
+                    value={formData.Soil_Type}
                     onChange={handleChange}
                     icon="🌱"
                   />
@@ -440,39 +501,39 @@ const Input = () => {
 
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <InputField label="Rainfall (mm)" name="rainfall_mm" value={formData.rainfall_mm} onChange={handleChange} min={0} max={300} icon="🌧️" />
-                    <InputField label="Temperature (°C)" name="temperature_c" value={formData.temperature_c} onChange={handleChange} min={-4} max={45} icon="🌡️" />
+                    <InputField label="Rainfall (mm)" name="Rainfall_mm" value={formData.Rainfall_mm} onChange={handleChange} min={0} max={300} icon="🌧️" />
+                    <InputField label="Temperature (°C)" name="Temperature_C" value={formData.Temperature_C} onChange={handleChange} min={-4} max={45} icon="🌡️" />
                   </div>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <InputField label="Wind Speed (km/h)" name="wind_speed_kmh" value={formData.wind_speed_kmh} onChange={handleChange} min={0} max={99} icon="💨" />
-                    <InputField label="NDVI" name="ndvi" value={formData.ndvi} onChange={handleChange} min={-1} max={1} icon="🌿" />
+                    <InputField label="Wind Speed (km/h)" name="Wind_speed_kmh" value={formData.Wind_speed_kmh} onChange={handleChange} min={0} max={99} icon="💨" />
+                    <InputField label="NDVI" name="NDVI" value={formData.NDVI} onChange={handleChange} min={-1} max={1} icon="🌿" />
                   </div>
                   
                   
                   <DropdownField
                     label="Land Cover"
-                    name="land_cover"
+                    name="Land_Cover"
                     options={["Bare", "Forest", "Grassland", "Urban"]}
-                    value={formData.land_cover}
+                    value={formData.Land_Cover}
                     onChange={handleChange}
                     icon="🗺️"
                   />
 
                   <DropdownField
                     label="Vegetation"
-                    name="vegetation"
+                    name="Vegetation"
                     options={["Sparse", "Dense", "Medium"]}
-                    value={formData.vegetation}
+                    value={formData.Vegetation}
                     onChange={handleChange}
                     icon="🌳"
                   />
 
                   <DropdownField
                     label="Season"
-                    name="season"
+                    name="Season"
                     options={["Winter", "Spring", "Summer", "Autumn"]}
-                    value={formData.season}
+                    value={formData.Season}
                     onChange={handleChange}
                     icon="🗓️"
                   />
@@ -489,16 +550,16 @@ const Input = () => {
                 </div>
 
                 <div className="space-y-6">
-                  <InputField label="Rock Size (cm)" name="rock_size_cm" value={formData.rock_size_cm} onChange={handleChange} min={10} max={500} icon="📏" />
-                  <InputField label="Rock Volume (m³)" name="rock_volume_m3" value={formData.rock_volume_m3} onChange={handleChange} min={0.5} max={7.5} icon="🪨" />
-                  <InputField label="Rock Velocity (m/s)" name="rock_velocity_mps" value={formData.rock_velocity_mps} onChange={handleChange} min={1} max={29} icon="⚡" />
+                  <InputField label="Rock Size (cm)" name="Rock_Size_cm" value={formData.Rock_Size_cm} onChange={handleChange} min={10} max={500} icon="📏" />
+                  <InputField label="Rock Volume (m³)" name="Rock_Volume_m3" value={formData.Rock_Volume_m3} onChange={handleChange} min={0.5} max={7.5} icon="🪨" />
+                  <InputField label="Rock Velocity (m/s)" name="Rock_Velocity_mps" value={formData.Rock_Velocity_mps} onChange={handleChange} min={1} max={29} icon="⚡" />
                   
                   
                   <DropdownField
                     label="Prior Events"
-                    name="prior_events"
-                    options={[0, 1, 2, 3, 4]}
-                    value={formData.prior_events}
+                    name="Prior_Events"
+                    options={["0", "1", "2", "3", "4"]}
+                    value={formData.Prior_Events}
                     onChange={handleChange}
                     icon="📊"
                   />
@@ -513,12 +574,12 @@ const Input = () => {
                       <div className="flex justify-between items-center">
                         <span className="text-gray-300">Risk Level:</span>
                         <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                          parseFloat(formData.slope_deg) > 35 ? 'bg-red-600 text-white' :
-                          parseFloat(formData.slope_deg) > 30 ? 'bg-yellow-600 text-white' :
+                          parseFloat(formData.Slope_deg) > 35 ? 'bg-red-600 text-white' :
+                          parseFloat(formData.Slope_deg) > 30 ? 'bg-yellow-600 text-white' :
                           'bg-green-600 text-white'
                         }`}>
-                          {parseFloat(formData.slope_deg) > 35 ? 'HIGH' :
-                           parseFloat(formData.slope_deg) > 30 ? 'MEDIUM' : 'LOW'}
+                          {parseFloat(formData.Slope_deg) > 35 ? 'HIGH' :
+                           parseFloat(formData.Slope_deg) > 30 ? 'MEDIUM' : 'LOW'}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
@@ -535,60 +596,34 @@ const Input = () => {
 
             {/* Submit Button */}
             <div className="flex justify-center mt-12">
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className={`bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-4 px-8 rounded-2xl shadow-2xl 
-                  transition-all duration-300 flex items-center text-lg
-                  ${isSubmitting 
-                    ? 'opacity-50 cursor-not-allowed' 
-                    : 'hover:from-orange-600 hover:to-red-600 hover:shadow-orange-500/25 hover:scale-105 active:scale-95'
-                  }`}
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3"></div>
-                    Analyzing Data...
-                  </>
-                ) : (
-                  <>
-                    <span className="mr-3 text-xl">🔬</span>
-                    Submit & Analyze Data
-                  </>
-                )}
-              </button>
+              <form onSubmit={handleSubmit} className="contents">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className={`bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-4 px-8 rounded-2xl shadow-2xl 
+                    transition-all duration-300 flex items-center text-lg
+                    ${isSubmitting 
+                      ? 'opacity-50 cursor-not-allowed' 
+                      : 'hover:from-orange-600 hover:to-red-600 hover:shadow-orange-500/25 hover:scale-105 active:scale-95'
+                    }`}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3"></div>
+                      Analyzing Data...
+                    </>
+                  ) : (
+                    <>
+                      <span className="mr-3 text-xl">🔬</span>
+                        Analyze Data
+                    </>
+                  )}
+                </button>
+              </form>
             </div>
           </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .animate-slideDown {
-          animation: slideDown 0.3s ease-out;
-        }
-        
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
-          -webkit-appearance: none;
-          margin: 0;
-        }
-        
-        input[type=number] {
-          -moz-appearance: textfield;
-        }
-      `}</style>
     </div>
   );
 };

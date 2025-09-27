@@ -68,6 +68,8 @@ export const Navbar = () => {
   href="#contacts"
   onClick={(e) => {
     e.preventDefault();
+          localStorage.setItem("scrollToContacts", "true");
+      window.location.href = "/";
 
     if (window.location.pathname !== "/") {
       // Save intent to scroll after redirect

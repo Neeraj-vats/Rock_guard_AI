@@ -142,7 +142,7 @@ const Result = () => {
   };
   
   return (
-    <div className="flex flex-col md:flex-row h-screen font-sans bg-gray-900 text-gray-100 p-4 items-start overflow-auto">
+    <div className="flex flex-col md:flex-row h-screen font-sans bg-gray-900 text-gray-100 p-14 items-start overflow-auto ">
       
       {/* Sidebar for user inputs */}
       <div className="md:w-1/4 w-full bg-gray-800 p-6 rounded-2xl shadow-xl space-y-6 md:mr-4 mb-4 md:mb-0 md:sticky top-4">

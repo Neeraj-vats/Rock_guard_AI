@@ -1,16 +1,21 @@
 import { AlertTriangle, BarChart3, PlayCircle, Shield, Zap, Eye } from "lucide-react";
 import { useState, useEffect } from "react";
-import HeroImage from "../assets/hero-rockfall1.png"; // Replace with your actual image path
+import HeroImage from "../assets/hero-rockfall-bg.jpg"; // Your specified image path
 
-// Mock Button component since we don't have the actual one
+// --- Updated Mock Button Component ---
+// Now includes the 'geological' and 'alert' variants used in your code.
 const Button = ({ children, variant, size, className, onClick }) => {
-  const baseClasses = "inline-flex items-center justify-center font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2";
+  const baseClasses = "inline-flex items-center justify-center font-semibold tracking-wide transition-all duration-300 transform rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background";
+  
   const variants = {
-    default: "bg-white text-black hover:bg-gray-100 focus:ring-white",
-    outline: "border-2 bg-transparent hover:bg-opacity-20 focus:ring-current"
+    default: "bg-foreground text-background hover:bg-foreground/90 focus:ring-foreground",
+    outline: "border-2 border-border bg-transparent hover:bg-foreground/10 hover:text-foreground focus:ring-foreground",
+    geological: "bg-gradient-to-r from-amber-500 to-yellow-500 text-black hover:from-amber-400 hover:to-yellow-400 focus:ring-amber-500",
+    alert: "border-2 border-red-500/80 text-red-400 bg-transparent hover:bg-red-500/10 hover:border-red-500 hover:text-red-300 focus:ring-red-500"
   };
+
   const sizes = {
-    lg: "px-8 py-4 text-lg rounded-xl"
+    lg: "px-6 py-3 text-base md:px-8 md:py-4 md:text-lg"
   };
   
   return (
@@ -23,105 +28,76 @@ const Button = ({ children, variant, size, className, onClick }) => {
   );
 };
 
+
 const Hero = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [currentStat, setCurrentStat] = useState(0);
 
+  // Your stats data is preserved
   const stats = [
-    { value: "99.7%", label: "Accuracy Rate", icon: <Eye className="w-5 h-5" /> },
-    { value: "24/7", label: "Real-time Monitoring", icon: <Zap className="w-5 h-5" /> },
-    { value: "500+", label: "Lives Protected Daily", icon: <Shield className="w-5 h-5" /> }
+    { value: "97.82%", label: "Accuracy Rate", icon: <Eye size={28} /> },
+    { value: "24/7", label: "Real-time Monitoring", icon: <Zap size={28} /> },
+    { value: "Saving Life", label: "Lives Protected Daily", icon: <Shield size={28} /> }
   ];
 
+  // Your logic for visibility and cycling stats is preserved
   useEffect(() => {
     setIsVisible(true);
-    
-    // Cycle through stats
     const interval = setInterval(() => {
       setCurrentStat((prev) => (prev + 1) % stats.length);
-    }, 3000);
-
+    }, 3000); // Stat cycles every 3 seconds
     return () => clearInterval(interval);
   }, []);
 
-
-
   return (
-    <section id="Home" className="relative min-h-screen  flex items-center overflow-hidden">
-      {/* Animated Background */}
+    <section id="Home" className="relative min-h-screen flex items-center justify-center sm:justify-start text-center sm:text-left overflow-hidden bg-background">
+      
+      {/* --- Polished Background & Overlays --- */}
       <div
-        className="absolute inset-0 bg-cover  bg-center bg-no-repeat transition-transform duration-[20s] hover:scale-105"
+        className="absolute inset-0 bg-cover bg-center transition-transform duration-[15s] ease-in-out hover:scale-105"
         style={{ backgroundImage: `url(${HeroImage})` }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r  from-black/60 via-black/30 to-transparent" />
-        
-        {/* Floating Particles */}
-        <div className="absolute inset-0">
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-white/20 rounded-full animate-pulse"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${3 + Math.random() * 2}s`
-              }}
-            />
-          ))}
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/60 to-background/20" />
+        <div className="absolute inset-0 bg- /20 " />
       </div>
 
-      {/* Content */}
-      <div className="container mx-auto px-4 relative z-10 mt-[5.8rem]">
-        <div className="max-w-4xl">
-          {/* Alert Banner */}
-          {/* <div className={`transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-red-500/20 border border-red-500/30 text-red-300 mb-6 backdrop-blur-sm">
-              <AlertTriangle className="w-4 h-4 mr-2 animate-pulse" />
-              <span className="text-sm font-medium">Critical Infrastructure Protection Active</span>
-            </div>
-          </div> */}
+      {/* --- Content --- */}
+      <div className="container mx-auto px-4 relative z-10 ml-[5rem]">
+        <div className="max-w-3xl">
 
-          {/* Main Heading */}
-          <h1 className={`text-5xl md:text-7xl font-bold text-white mb-8 leading-tight transform transition-all duration-1000 delay-300 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <span className="block mb-2">
-              Next-Gen
-            </span>
-            <span className="block bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-200 bg-clip-text text-transparent animate-pulse">
+          {/* --- Main Heading --- */}
+          <h1 
+            className={`text-5xl md:text-7xl font-extrabold text-foreground mb-6 leading-tight tracking-tighter transform transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+            style={{ textShadow: '0 4px 20px rgba(0,0,0,0.5)' }}
+          >
+            <span className="block text-orange-400/75 leading-[2.5rem]">Next-Generation</span>
+            <span className="block bg-gradient-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">
               Rockfall Prediction
-            </span>
-            <span className="block text-3xl md:text-4xl mt-4 text-gray-300 font-light">
-              & Safety Monitoring
             </span>
           </h1>
 
-          {/* Description */}
-          <p className={`text-xl md:text-2xl text-gray-200 mb-12 leading-relaxed max-w-3xl transform transition-all duration-1000 delay-500 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            Harness the power of AI and real-time monitoring to predict landslides, 
-            prevent disasters, and safeguard communities with precision alerts and 
-            comprehensive risk assessment.
+          {/* --- Description --- */}
+          <p className={`text-lg md:text-xl text-muted-foreground text-white mb-10 max-w-2xl leading-relaxed transform transition-all duration-700 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            Harnessing AI to predict landslides, prevent disasters, and safeguard communities with real-time alerts and comprehensive risk assessment.
           </p>
 
-          {/* Stats Section */}
-          <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 transform transition-all duration-1000 delay-700 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+          {/* --- Stats Section --- */}
+          <div className={`grid grid-cols-1 md:grid-cols-3 gap-4 mb-12 transform transition-all duration-700 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             {stats.map((stat, index) => (
               <div
                 key={index}
-                className={`bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 transform transition-all duration-500 hover:scale-105 hover:bg-white/15 ${
-                  currentStat === index ? 'ring-2 ring-amber-400 shadow-lg shadow-amber-400/20' : ''
+                className={`group rounded-xl p-4 border border-border bg-card/60 backdrop-blur-lg transition-all duration-300 hover:border-amber-400/50 hover:scale-105 hover:bg-card/80 ${
+                  currentStat === index ? 'ring-2 ring-amber-400 shadow-xl shadow-amber-500/20' : 'ring-1 ring-transparent'
                 }`}
               >
-                <div className="flex items-center justify-center mb-3">
-                  <div className="text-amber-400">
+                <div className="flex flex-col items-center justify-center text-center h-full">
+                  <div className="text-amber-400 mb-2 transition-transform duration-300 group-hover:-translate-y-1">
                     {stat.icon}
                   </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl md:text-3xl font-bold text-white mb-1">
+                  <div className="text-3xl font-bold text-foreground">
                     {stat.value}
                   </div>
-                  <div className="text-sm text-gray-300">
+                  <div className="text-sm font-medium text-muted-foreground">
                     {stat.label}
                   </div>
                 </div>
@@ -129,67 +105,45 @@ const Hero = () => {
             ))}
           </div>
 
-          {/* CTA Buttons */}
-          <div className={`flex flex-col sm:flex-row gap-6 transform transition-all duration-1000 delay-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+          {/* --- CTA Buttons --- */}
+          <div className={`flex flex-col sm:flex-row gap-4 transform transition-all duration-700 delay-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <Button
-              variant="default"
+              variant="geological"
               size="lg"
-              className="group relative overflow-hidden bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-semibold shadow-2xl shadow-amber-500/25 hover:shadow-amber-500/40 border-0"
+              className="group w-full sm:w-auto shadow-lg shadow-amber-500/20 hover:shadow-xl hover:shadow-amber-500/30 hover:-translate-y-1"
               onClick={() => window.location.href = '/dashboard'}
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-yellow-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
-              <div className="relative flex items-center">
-                <BarChart3 className="h-6 w-6 mr-3 group-hover:rotate-12 transition-transform duration-300" />
-                Access Dashboard
-              </div>
+              <BarChart3 className="h-5 w-5 mr-2 transition-transform duration-300 group-hover:rotate-12" />
+              Access Dashboard
             </Button>
-
+            
             <Button
-              variant="outline"
+              variant="alert"
               size="lg"
-              className="group relative overflow-hidden border-2 border-red-500 text-red-400 hover:text-white hover:border-red-400 hover:shadow-lg hover:shadow-red-500/25"
-              
+              className="group w-full sm:w-auto hover:-translate-y-1"
+              onClick={() => document.getElementById('risk')?.scrollIntoView({ behavior: 'smooth' })}
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
-              <div className="relative flex items-center">
-                <AlertTriangle className="h-6 w-6 mr-3 group-hover:animate-bounce" />
-                <a href="#risk">Emergency Alerts</a>
-              </div>
+              <AlertTriangle className="h-5 w-5 mr-2 transition-transform duration-300 group-hover:animate-ping" />
+              Emergency Alerts
             </Button>
             
             <Button
               variant="outline"
               size="lg"
-              className="group relative overflow-hidden border-2 border-white/30 text-white hover:text-black hover:border-white hover:shadow-lg hover:shadow-white/25"
+              className="group w-full sm:w-auto text-foreground hover:border-foreground hover:-translate-y-1"
               onClick={() => window.location.href = '/demo'}
             >
-              <div className="absolute inset-0 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
-              <div className="relative flex items-center">
-                <PlayCircle className="h-6 w-6 mr-3 group-hover:scale-110 transition-transform duration-300" />
-                Watch Demo
-              </div>
+              <PlayCircle className="h-5 w-5 mr-2 transition-transform duration-300 group-hover:scale-110" />
+              Watch Demo
             </Button>
-          </div>
-
-          {/* Trust Indicators */}
-          <div className={`mt-16 flex flex-wrap items-center gap-8 text-gray-400 transform transition-all duration-1000 delay-1200 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <span className="text-sm">Trusted by:</span>
-            <div className="flex items-center gap-6 text-gray-300">
-              <span className="font-semibold">Government Agencies</span>
-              <span>•</span>
-              <span className="font-semibold">Mining Companies</span>
-              <span>•</span>
-              <span className="font-semibold">Infrastructure Teams</span>
-            </div>
           </div>
         </div>
       </div>
-
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-        <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
-          <div className="w-1 h-3 bg-white/60 rounded-full mt-2 animate-pulse"></div>
-        </div>
+      
+      {/* --- Modern Scroll Down Indicator --- */}
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-50">
+        <span className="text-xs font-mono tracking-widest text-foreground">SCROLL</span>
+        <div className="w-px h-12 bg-gradient-to-b from-transparent via-foreground/70 to-transparent animate-pulse" />
       </div>
     </section>
   );

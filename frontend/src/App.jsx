@@ -3,6 +3,7 @@ import "./App.css";
 import Home from "./pages/Home";
 import InputPage from "./pages/InputPage"; // ✅ make sure this path is correct
 import Navbar from "./components/Navbar";        // ✅ adjust path if needed
+import Result from "./pages/Result";
 
 function App() {
   return (
@@ -16,6 +17,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/analyze" element={<InputPage />} />
+          <Route path="/result" element={<Result  />} />
+        
         </Routes>
       </div>
     </Router>

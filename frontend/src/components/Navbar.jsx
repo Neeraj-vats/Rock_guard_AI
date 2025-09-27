@@ -9,7 +9,7 @@ export const Navbar = () => {
         {/* Logo with Gradient */}
         <Link to="/">
           <h1 className="text-3xl font-extrabold tracking-tight">
-            <span className="bg-gradient-to-r from-orange-300 to-yellow-200 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-orange-300 to-yellow-200 bg-clip-text text-transparent flex justify-start -translate-x-22">
               Rockfall Predictor
             </span>
           </h1>
@@ -37,20 +37,21 @@ export const Navbar = () => {
           </li>
           <li>
             <Link
+            to={"/result"}
               href="#"
               className="font-medium hover:text-orange-400 transition-colors duration-300"
             >
               Results
             </Link>
           </li>
-          <li>
+          {/* <li>
             <Link
               to="/dashboard"
               className="font-medium hover:text-orange-400 transition-colors duration-300"
             >
               Dashboard
             </Link>
-          </li>
+          </li> */}
 
           {/* ✅ Route to Analyze page */}
           <li>
@@ -67,6 +68,8 @@ export const Navbar = () => {
   href="#contacts"
   onClick={(e) => {
     e.preventDefault();
+          localStorage.setItem("scrollToContacts", "true");
+      window.location.href = "/";
 
     if (window.location.pathname !== "/") {
       // Save intent to scroll after redirect

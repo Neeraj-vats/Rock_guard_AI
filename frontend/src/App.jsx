@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import InputPage from "./pages/InputPage"; // ✅ make sure this path is correct
 import Navbar from "./components/Navbar";        // ✅ adjust path if needed
 import Result from "./pages/Result";
+import Score from "./pages/Score";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/analyze" element={<InputPage />} />
           <Route path="/result" element={<Result  />} />
+          <Route path="/analyze/score" element={<Score/>}></Route>
         
         </Routes>
       </div>

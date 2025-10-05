@@ -1,2 +1,2 @@
 # Rock_guard_AI
-this is an colaborative repo for internal hackathon . Project - Rockfall Prediction 
+this is an colaborative repo for  smart india hackathon . Project - Rockfall Prediction 
